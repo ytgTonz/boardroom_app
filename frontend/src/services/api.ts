@@ -3,8 +3,21 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 // Helper function to handle API responses
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Something went wrong');
+    let errorMessage = 'Something went wrong';
+    
+    try {
+      const errorData = await response.json();
+      if (errorData.message) {
+        errorMessage = errorData.message;
+      } else if (errorData.errors && Array.isArray(errorData.errors)) {
+        errorMessage = errorData.errors.map((err: any) => err.msg).join(', ');
+      }
+    } catch (e) {
+      // If we can't parse the error response, use the status text
+      errorMessage = response.statusText || 'Network error';
+    }
+    
+    throw new Error(errorMessage);
   }
   return response.json();
 };

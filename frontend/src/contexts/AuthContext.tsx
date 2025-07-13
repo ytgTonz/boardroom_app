@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import axios from 'axios';
+import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 interface User {
@@ -38,7 +38,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       // You could verify the token here if needed
       const userData = localStorage.getItem('user');
       if (userData) {
@@ -50,34 +49,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post('/auth/login', { email, password });
-      const { token, user } = response.data;
+      const response = await authAPI.login(email, password);
+      const { token, user } = response;
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       setUser(user);
       toast.success('Login successful!');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Login failed');
+      toast.error(error.message || 'Login failed');
       throw error;
     }
   };
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await axios.post('/auth/register', { name, email, password });
-      const { token, user } = response.data;
+      const response = await authAPI.register(name, email, password);
+      const { token, user } = response;
       
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       setUser(user);
       toast.success('Registration successful!');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Registration failed');
+      toast.error(error.message || 'Registration failed');
       throw error;
     }
   };
@@ -85,7 +82,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    delete axios.defaults.headers.common['Authorization'];
     setUser(null);
     toast.success('Logged out successfully');
   };

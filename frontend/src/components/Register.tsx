@@ -7,16 +7,40 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+    
+    // Basic client-side validation
+    if (!name.trim()) {
+      setError('Name is required');
+      setLoading(false);
+      return;
+    }
+    
+    if (!email.trim()) {
+      setError('Email is required');
+      setLoading(false);
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
     
     try {
+      console.log('Attempting registration with:', { name, email, password: '***' });
       await register(name, email, password);
-    } catch (error) {
+      console.log('Registration successful');
+    } catch (error: any) {
       console.error('Registration error:', error);
+      setError(error.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -44,6 +68,7 @@ const Register: React.FC = () => {
                 className="input mt-1"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={loading}
               />
             </div>
             <div>
@@ -58,6 +83,7 @@ const Register: React.FC = () => {
                 className="input mt-1"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
               />
             </div>
             <div>
@@ -72,15 +98,25 @@ const Register: React.FC = () => {
                 className="input mt-1"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
               />
+              <p className="mt-1 text-sm text-gray-500">
+                Must be at least 6 characters long
+              </p>
             </div>
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
 
           <div>
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-primary w-full"
+              className="btn btn-primary w-full disabled:opacity-50"
             >
               {loading ? 'Creating account...' : 'Create account'}
             </button>

@@ -6,9 +6,24 @@ const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     
+    // Check if all required fields are present
+    if (!name || !email || !password) {
+      return res.status(400).json({ 
+        message: 'Name, email, and password are required' 
+      });
+    }
+
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'User already exists with this email' });
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({ 
+        message: 'Password must be at least 6 characters long' 
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -32,7 +47,19 @@ const register = async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error' });
+    
+    // Handle MongoDB duplicate key error
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'User already exists with this email' });
+    }
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ message: messages.join(', ') });
+    }
+    
+    res.status(500).json({ message: 'Server error during registration' });
   }
 };
 
