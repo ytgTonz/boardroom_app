@@ -1,0 +1,148 @@
+const Boardroom = require('../models/Boardroom');
+
+const getAllBoardrooms = async (req, res) => {
+  try {
+    const boardrooms = await Boardroom.find({ isActive: true }).sort({ name: 1 });
+    res.json(boardrooms);
+  } catch (error) {
+    console.error('Get boardrooms error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getBoardroomById = async (req, res) => {
+  try {
+    const boardroom = await Boardroom.findById(req.params.id);
+    if (!boardroom) {
+      return res.status(404).json({ message: 'Boardroom not found' });
+    }
+    res.json(boardroom);
+  } catch (error) {
+    console.error('Get boardroom error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const createBoardroom = async (req, res) => {
+  try {
+    const { name, capacity, location, amenities, description, images } = req.body;
+    const boardroom = new Boardroom({ 
+      name, 
+      capacity, 
+      location, 
+      amenities: amenities || [], 
+      description,
+      images: images || []
+    });
+    await boardroom.save();
+    res.status(201).json(boardroom);
+  } catch (error) {
+    console.error('Create boardroom error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const updateBoardroom = async (req, res) => {
+  try {
+    const { name, capacity, location, amenities, description, isActive, images } = req.body;
+    const boardroom = await Boardroom.findByIdAndUpdate(
+      req.params.id,
+      { name, capacity, location, amenities, description, isActive, images },
+      { new: true, runValidators: true }
+    );
+    
+    if (!boardroom) {
+      return res.status(404).json({ message: 'Boardroom not found' });
+    }
+    
+    res.json(boardroom);
+  } catch (error) {
+    console.error('Update boardroom error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const deleteBoardroom = async (req, res) => {
+  try {
+    const boardroom = await Boardroom.findByIdAndUpdate(
+      req.params.id,
+      { isActive: false },
+      { new: true }
+    );
+    
+    if (!boardroom) {
+      return res.status(404).json({ message: 'Boardroom not found' });
+    }
+    
+    res.json({ message: 'Boardroom deactivated successfully' });
+  } catch (error) {
+    console.error('Delete boardroom error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getAllBoardroomsAdmin = async (req, res) => {
+  try {
+    const boardrooms = await Boardroom.find().sort({ name: 1 });
+    res.json(boardrooms);
+  } catch (error) {
+    console.error('Get all boardrooms admin error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const addBoardroomImage = async (req, res) => {
+  try {
+    const { imageUrl, alt, isPrimary } = req.body;
+    const boardroom = await Boardroom.findById(req.params.id);
+    
+    if (!boardroom) {
+      return res.status(404).json({ message: 'Boardroom not found' });
+    }
+    
+    // If this is a primary image, unset other primary images
+    if (isPrimary) {
+      boardroom.images.forEach(img => img.isPrimary = false);
+    }
+    
+    boardroom.images.push({ url: imageUrl, alt, isPrimary });
+    await boardroom.save();
+    
+    res.json(boardroom);
+  } catch (error) {
+    console.error('Add boardroom image error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const removeBoardroomImage = async (req, res) => {
+  try {
+    const { imageIndex } = req.params;
+    const boardroom = await Boardroom.findById(req.params.id);
+    
+    if (!boardroom) {
+      return res.status(404).json({ message: 'Boardroom not found' });
+    }
+    
+    if (imageIndex >= 0 && imageIndex < boardroom.images.length) {
+      boardroom.images.splice(imageIndex, 1);
+      await boardroom.save();
+    }
+    
+    res.json(boardroom);
+  } catch (error) {
+    console.error('Remove boardroom image error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = {
+  getAllBoardrooms,
+  getBoardroomById,
+  createBoardroom,
+  updateBoardroom,
+  deleteBoardroom,
+  getAllBoardroomsAdmin,
+  addBoardroomImage,
+  removeBoardroomImage
+}; 
