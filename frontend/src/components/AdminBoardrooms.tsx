@@ -72,6 +72,20 @@ const AdminBoardrooms: React.FC = () => {
     }
   };
 
+  const handlePermanentDelete = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to PERMANENTLY DELETE "${name}"? This action cannot be undone and will only work if the boardroom has no bookings.`)) {
+      return;
+    }
+
+    try {
+      await boardroomsAPI.permanentDelete(id);
+      alert('Boardroom permanently deleted successfully!');
+      fetchBoardrooms();
+    } catch (error: any) {
+      alert(error.message || 'Failed to permanently delete boardroom');
+    }
+  };
+
   const handleEdit = (boardroom: Boardroom) => {
     setEditingBoardroom(boardroom);
     setFormData({
@@ -312,9 +326,16 @@ const AdminBoardrooms: React.FC = () => {
                   </button>
                   <button
                     onClick={() => handleDelete(boardroom._id)}
-                    className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+                    className="px-3 py-1 text-sm text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded-md transition-colors"
                   >
                     Deactivate
+                  </button>
+                  <button
+                    onClick={() => handlePermanentDelete(boardroom._id, boardroom.name)}
+                    className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+                    title="Permanently delete (only if no bookings exist)"
+                  >
+                    Delete
                   </button>
                 </div>
               </div>

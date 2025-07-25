@@ -82,6 +82,32 @@ const deleteBoardroom = async (req, res) => {
   }
 };
 
+const permanentDeleteBoardroom = async (req, res) => {
+  try {
+    // Check if boardroom has any bookings
+    const Booking = require('../models/Booking');
+    const bookingCount = await Booking.countDocuments({ boardroom: req.params.id });
+    
+    if (bookingCount > 0) {
+      return res.status(400).json({ 
+        message: 'Cannot permanently delete boardroom with existing bookings. Please deactivate instead.',
+        bookingCount 
+      });
+    }
+    
+    const boardroom = await Boardroom.findByIdAndDelete(req.params.id);
+    
+    if (!boardroom) {
+      return res.status(404).json({ message: 'Boardroom not found' });
+    }
+    
+    res.json({ message: 'Boardroom permanently deleted successfully' });
+  } catch (error) {
+    console.error('Permanent delete boardroom error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const getAllBoardroomsAdmin = async (req, res) => {
   try {
     const boardrooms = await Boardroom.find().sort({ name: 1 });
@@ -208,6 +234,7 @@ module.exports = {
   createBoardroom,
   updateBoardroom,
   deleteBoardroom,
+  permanentDeleteBoardroom,
   getAllBoardroomsAdmin,
   addBoardroomImage,
   removeBoardroomImage,

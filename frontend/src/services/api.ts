@@ -118,6 +118,14 @@ export const boardroomsAPI = {
     return handleResponse(response);
   },
 
+  permanentDelete: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/boardrooms/${id}/permanent`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
   addImage: async (id: string, imageData: any) => {
     const response = await fetch(`${API_BASE_URL}/boardrooms/${id}/images`, {
       method: 'POST',

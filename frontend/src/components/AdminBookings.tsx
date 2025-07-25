@@ -5,6 +5,7 @@ import { Booking } from '../types';
 const AdminBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,14 +18,20 @@ const AdminBookings: React.FC = () => {
   const fetchBookings = async () => {
     try {
       console.log('Fetching admin bookings...');
+      setError(null);
       const data = await bookingsAPI.getAll();
       console.log('Admin bookings data:', data);
       
       // Ensure data is an array
       const bookingsArray = Array.isArray(data) ? data : [];
       setBookings(bookingsArray);
-    } catch (error) {
+      
+      if (bookingsArray.length === 0) {
+        console.log('No bookings found');
+      }
+    } catch (error: any) {
       console.error('Error fetching bookings:', error);
+      setError(error.message || 'Failed to fetch bookings');
       setBookings([]); // Set empty array on error
     } finally {
       setLoading(false);
@@ -115,7 +122,7 @@ const AdminBookings: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="card">
+      <div className="p-6 bg-white rounded-lg shadow">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="space-y-4">
@@ -127,12 +134,36 @@ const AdminBookings: React.FC = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="p-6 bg-white rounded-lg shadow">
+        <div className="text-center py-12">
+          <div className="mx-auto h-12 w-12 text-red-400">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">Error loading bookings</h3>
+          <p className="mt-1 text-sm text-gray-500">{error}</p>
+          <div className="mt-6">
+            <button
+              onClick={fetchBookings}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const stats = getBookingStats();
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="card">
+      <div className="p-6 bg-white rounded-lg shadow">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Booking Management</h1>
@@ -143,7 +174,7 @@ const AdminBookings: React.FC = () => {
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="card">
+        <div className="p-6 bg-white rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-blue-100 text-blue-600">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,7 +188,7 @@ const AdminBookings: React.FC = () => {
           </div>
         </div>
 
-        <div className="card">
+        <div className="p-6 bg-white rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-green-100 text-green-600">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,7 +202,7 @@ const AdminBookings: React.FC = () => {
           </div>
         </div>
 
-        <div className="card">
+        <div className="p-6 bg-white rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,7 +216,7 @@ const AdminBookings: React.FC = () => {
           </div>
         </div>
 
-        <div className="card">
+        <div className="p-6 bg-white rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-red-100 text-red-600">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,7 +232,7 @@ const AdminBookings: React.FC = () => {
       </div>
 
       {/* Filters and Search */}
-      <div className="card">
+      <div className="p-6 bg-white rounded-lg shadow">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <input
@@ -378,8 +409,8 @@ const AdminBookings: React.FC = () => {
         )}
       </div>
 
-      {filteredBookings.length === 0 && (
-        <div className="card text-center py-12">
+      {filteredBookings.length === 0 && !loading && !error && (
+        <div className="p-6 bg-white rounded-lg shadow text-center py-12">
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>

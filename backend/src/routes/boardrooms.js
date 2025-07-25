@@ -6,6 +6,7 @@ const {
   createBoardroom, 
   updateBoardroom, 
   deleteBoardroom,
+  permanentDeleteBoardroom,
   getAllBoardroomsAdmin,
   addBoardroomImage,
   removeBoardroomImage,
@@ -41,6 +42,7 @@ router.get('/admin/all', authenticateToken, requireAdmin, getAllBoardroomsAdmin)
 router.post('/', authenticateToken, requireAdmin, validateBoardroom, createBoardroom);
 router.put('/:id', authenticateToken, requireAdmin, validateBoardroom, updateBoardroom);
 router.delete('/:id', authenticateToken, requireAdmin, deleteBoardroom);
+router.delete('/:id/permanent', authenticateToken, requireAdmin, permanentDeleteBoardroom);
 router.post('/:id/images', authenticateToken, requireAdmin, addBoardroomImage);
 router.post('/:id/upload-image', authenticateToken, requireAdmin, upload.single('image'), uploadBoardroomImage);
 router.delete('/:id/images/:imageIndex', authenticateToken, requireAdmin, removeBoardroomImage);
