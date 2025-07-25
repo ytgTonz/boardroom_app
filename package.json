@@ -17,11 +17,24 @@
   "devDependencies": {
     "concurrently": "^8.2.0"
   },
-  "keywords": ["boardroom", "booking", "react", "nodejs", "express", "mongodb"],
+  "keywords": [
+    "boardroom",
+    "booking",
+    "react",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
   "author": "",
   "license": "MIT",
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.8.2",
+    "react-redux": "^9.2.0",
+    "redux": "^5.0.1",
+    "redux-persist": "^6.0.0"
   }
-} 
+}

@@ -185,4 +185,53 @@ export const bookingsAPI = {
     });
     return handleResponse(response);
   },
+
+  optOut: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/bookings/${id}/opt-out`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+}; 
+
+// Users API
+export const usersAPI = {
+  getAll: async () => {
+    const response = await fetch(`${API_BASE_URL}/auth/users`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+};
+
+// Notifications API
+export const notificationsAPI = {
+  getAll: async () => {
+    const response = await fetch(`${API_BASE_URL}/notifications`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+  markRead: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+  deleteOne: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/notifications/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+  deleteAll: async () => {
+    const response = await fetch(`${API_BASE_URL}/notifications`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
 }; 

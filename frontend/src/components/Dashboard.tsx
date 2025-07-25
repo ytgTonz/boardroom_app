@@ -52,7 +52,8 @@ const Dashboard: React.FC = () => {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     });
   };
 
@@ -177,7 +178,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-900">{booking.purpose}</h3>
                   <p className="text-sm text-gray-600">
-                    {booking.boardroom.name} • {booking.attendees} attendees
+                    {booking.boardroom.name} • {booking.attendees?.length || 0} attendees
                   </p>
                   <p className="text-sm text-gray-500">
                     {formatDate(booking.startTime)} - {formatDate(booking.endTime)}

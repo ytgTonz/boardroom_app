@@ -110,4 +110,14 @@ const getProfile = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getProfile }; 
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, '_id name email role');
+    res.json(users);
+  } catch (error) {
+    console.error('Get all users error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = { register, login, getProfile, getAllUsers }; 

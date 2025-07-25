@@ -9,6 +9,7 @@ require('dotenv').config();
 const authRoutes = require('./src/routes/auth');
 const boardroomRoutes = require('./src/routes/boardrooms');
 const bookingRoutes = require('./src/routes/bookings');
+const notificationRoutes = require('./src/routes/notifications');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -62,6 +63,7 @@ mongoose.connect(mongoUri, {
 app.use('/api/auth', authRoutes);
 app.use('/api/boardrooms', boardroomRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

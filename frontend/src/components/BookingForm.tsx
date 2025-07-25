@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { boardroomsAPI, bookingsAPI } from '../services/api';
-import { Boardroom, BookingFormData } from '../types';
+import { boardroomsAPI, bookingsAPI, usersAPI } from '../services/api';
+import { Boardroom, BookingFormData, User } from '../types';
+import { toast } from 'react-toastify';
+import Select from 'react-select';
 
 const BookingForm: React.FC = () => {
   const location = useLocation();
@@ -14,10 +16,11 @@ const BookingForm: React.FC = () => {
     startTime: '',
     endTime: '',
     purpose: '',
-    attendees: 1,
+    attendees: [],
     notes: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
     const fetchBoardrooms = async () => {
@@ -39,8 +42,16 @@ const BookingForm: React.FC = () => {
         setLoading(false);
       }
     };
-
+    const fetchUsers = async () => {
+      try {
+        const data = await usersAPI.getAll();
+        setUsers(data);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
     fetchBoardrooms();
+    fetchUsers();
   }, [location.state]);
 
   // Set minimum date to today
@@ -76,14 +87,16 @@ const BookingForm: React.FC = () => {
       if (start < new Date()) {
         newErrors.startTime = 'Start time cannot be in the past';
       }
+
+      
     }
 
     if (!formData.purpose.trim()) {
       newErrors.purpose = 'Please enter a purpose for the meeting';
     }
 
-    if (formData.attendees < 1) {
-      newErrors.attendees = 'Number of attendees must be at least 1';
+    if (!formData.attendees || formData.attendees.length === 0) {
+      newErrors.attendees = 'Please select at least one attendee';
     }
 
     setErrors(newErrors);
@@ -96,11 +109,10 @@ const BookingForm: React.FC = () => {
     if (!validateForm()) {
       return;
     }
-
     setSubmitting(true);
     try {
       await bookingsAPI.create(formData);
-      alert('Booking created successfully!');
+      toast.success('Booking created successfully!');
       
       // Reset form
       setFormData({
@@ -108,12 +120,12 @@ const BookingForm: React.FC = () => {
         startTime: '',
         endTime: '',
         purpose: '',
-        attendees: 1,
+        attendees: [],
         notes: ''
       });
       setSelectedBoardroom('');
     } catch (error: any) {
-      alert(error.message || 'Failed to create booking');
+      toast.error(error.message || 'Failed to create booking');
     } finally {
       setSubmitting(false);
     }
@@ -131,6 +143,15 @@ const BookingForm: React.FC = () => {
         ...prev,
         [field]: ''
       }));
+    }
+  };
+
+  const attendeeOptions = users.map(user => ({ value: user._id, label: `${user.name} (${user.email})` }));
+
+  const handleAttendeesChange = (selected: any) => {
+    setFormData(prev => ({ ...prev, attendees: selected ? selected.map((opt: any) => opt.value) : [] }));
+    if (errors.attendees) {
+      setErrors(prev => ({ ...prev, attendees: '' }));
     }
   };
 
@@ -275,27 +296,21 @@ const BookingForm: React.FC = () => {
               )}
             </div>
 
+            {/* Attendees Multi-Select */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Number of Attendees *
+                Attendees *
               </label>
-              <input
-                type="number"
-                value={formData.attendees}
-                onChange={(e) => handleInputChange('attendees', parseInt(e.target.value))}
-                min="1"
-                max={getSelectedBoardroom()?.capacity || 50}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.attendees ? 'border-red-300' : 'border-gray-300'
-                }`}
+              <Select
+                isMulti
+                options={attendeeOptions}
+                value={attendeeOptions.filter(opt => formData.attendees.includes(opt.value))}
+                onChange={handleAttendeesChange}
+                classNamePrefix="react-select"
+                placeholder="Select attendees..."
               />
               {errors.attendees && (
                 <p className="mt-1 text-sm text-red-600">{errors.attendees}</p>
-              )}
-              {getSelectedBoardroom() && (
-                <p className="mt-1 text-sm text-gray-500">
-                  Room capacity: {getSelectedBoardroom()?.capacity} people
-                </p>
               )}
             </div>
           </div>

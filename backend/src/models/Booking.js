@@ -24,11 +24,16 @@ const bookingSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  attendees: { 
-    type: Number, 
-    required: true,
-    min: 1
-  },
+  attendees: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  }],
+  // attendees: { 
+  //   type: Number, 
+  //   required: true,
+  //   min: 1
+  // }, // Deprecated: replaced by attendees array above
   status: { 
     type: String, 
     enum: ['pending', 'confirmed', 'cancelled'], 

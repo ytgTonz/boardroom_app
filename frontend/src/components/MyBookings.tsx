@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { bookingsAPI } from '../services/api';
 import { Booking } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 const MyBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -9,7 +10,10 @@ const MyBookings: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
 
+  const { user } = useAuth();
+
   useEffect(() => {
+    if (!user) return; // Wait for user to be loaded
     const fetchBookings = async () => {
       try {
         const data = await bookingsAPI.getMyBookings();
@@ -21,9 +25,8 @@ const MyBookings: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchBookings();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     let filtered = bookings;
@@ -72,12 +75,14 @@ const MyBookings: React.FC = () => {
     setFilteredBookings(filtered);
   }, [bookings, statusFilter, dateFilter]);
 
+  // Fixed cancel booking function to use the correct API method
   const handleCancelBooking = async (bookingId: string) => {
     if (!confirm('Are you sure you want to cancel this booking?')) {
       return;
     }
 
     try {
+      // Use the cancel method instead of delete
       await bookingsAPI.cancel(bookingId);
       // Refresh bookings
       const updatedBookings = await bookingsAPI.getMyBookings();
@@ -88,13 +93,27 @@ const MyBookings: React.FC = () => {
     }
   };
 
+  const handleOptOut = async (bookingId: string) => {
+    if (!window.confirm('Are you sure you want to opt out of this meeting?')) return;
+    try {
+      await bookingsAPI.optOut(bookingId);
+      // Refresh bookings
+      const updatedBookings = await bookingsAPI.getMyBookings();
+      setBookings(updatedBookings);
+      alert('You have opted out of this meeting.');
+    } catch (error: any) {
+      alert(error.message || 'Failed to opt out');
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     });
   };
 
@@ -116,6 +135,34 @@ const MyBookings: React.FC = () => {
     const bookingTime = new Date(startTime);
     const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
     return bookingTime > now && bookingTime <= oneHourFromNow;
+  };
+
+  // Helper functions to determine user's relationship to booking
+  const isUserCreator = (booking: Booking) => {
+    let truthi = booking.user._id === user?._id;
+    console.log(booking.user._id)
+    console.log(user?._id)
+    console.log(truthi);
+    return truthi;
+  };
+
+  const isUserAttendee = (booking: Booking) => {
+    return booking.attendees && 
+           Array.isArray(booking.attendees) && 
+           booking.attendees.some(attendee => attendee._id === user?._id);
+  };
+
+  const shouldShowCancelButton = (booking: Booking) => {
+    return booking.status === 'confirmed' && 
+           !isBookingPast(booking.startTime) && 
+           isUserCreator(booking);
+  };
+
+  const shouldShowOptOutButton = (booking: Booking) => {
+    return booking.status === 'confirmed' && 
+           !isBookingPast(booking.startTime) && 
+           isUserAttendee(booking) && 
+           !isUserCreator(booking);
   };
 
   if (loading) {
@@ -157,7 +204,7 @@ const MyBookings: React.FC = () => {
             >
               <option value="">All statuses</option>
               <option value="confirmed">Confirmed</option>
-              <option value="pending">Pending</option>
+              {/* <option value="pending">Pending</option> */}
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
@@ -195,7 +242,7 @@ const MyBookings: React.FC = () => {
         {filteredBookings.length === 0 ? (
           <div className="text-center py-12">
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
             </svg>
             <h3 className="mt-2 text-sm font-medium text-gray-900">No bookings found</h3>
             <p className="mt-1 text-sm text-gray-500">
@@ -225,7 +272,13 @@ const MyBookings: React.FC = () => {
                       )}
                       {isBookingPast(booking.startTime) && (
                         <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                          Past
+                          Complete
+                        </span>
+                      )}
+                      {/* Add indicator to show user's role */}
+                      {isUserCreator(booking) && (
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                          Created by you
                         </span>
                       )}
                     </div>
@@ -238,19 +291,55 @@ const MyBookings: React.FC = () => {
                       {formatDate(booking.startTime)} - {formatDate(booking.endTime)}
                     </p>
                     
-                    <p className="text-sm text-gray-600">
-                      {booking.attendees} attendee{booking.attendees !== 1 ? 's' : ''}
-                      {booking.notes && ` • ${booking.notes}`}
+                    <p className="text-sm text-gray-600 mb-2">
+                      Attendees:
+                      {booking.attendees && Array.isArray(booking.attendees) && booking.attendees.length > 0 ? (
+                        <span className="ml-2 flex flex-wrap gap-1">
+                          {booking.attendees.map((attendee) => (
+                            <span
+                              key={attendee._id}
+                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                attendee._id === user?._id 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-blue-100 text-blue-800'
+                              }`}
+                              title={attendee.email}
+                            >
+                              {attendee.name}
+                              {attendee._id === user?._id && ' (You)'}
+                            </span>
+                          ))}
+                        </span>
+                      ) : (
+                        <span className="ml-2 text-gray-400">None</span>
+                      )}
+                      {booking.notes && (
+                        <span className="ml-2 text-gray-600">
+                          • {booking.notes}
+                        </span>
+                      )}
                     </p>
                   </div>
-
+                  
+                  {/* Action Buttons - Improved logic */}    
                   <div className="flex items-center space-x-2">
-                    {booking.status === 'confirmed' && !isBookingPast(booking.startTime) && (
+                    {/* Show Cancel if user is the creator */}
+                    {shouldShowCancelButton(booking) && (
                       <button
                         onClick={() => handleCancelBooking(booking._id)}
-                        className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+                        className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors"
                       >
-                        Cancel
+                        Cancel Booking
+                      </button>
+                    )}
+                    
+                    {/* Show Opt Out if user is attendee but not creator */}
+                    {shouldShowOptOutButton(booking) && (
+                      <button
+                        onClick={() => handleOptOut(booking._id)}
+                        className="px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-colors"
+                      >
+                        Opt Out
                       </button>
                     )}
                   </div>
@@ -281,4 +370,4 @@ const MyBookings: React.FC = () => {
   );
 };
 
-export default MyBookings; 
+export default MyBookings;

@@ -1,8 +1,11 @@
+// frontend/src/types/index.ts
 export interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
-  role: string;
+  role: 'admin' | 'user';
+  createdAt: string;
+  lastLogin?: string;
 }
 
 export interface BoardroomImage {
@@ -18,8 +21,8 @@ export interface Boardroom {
   location: string;
   amenities: string[];
   images: BoardroomImage[];
-  description?: string;
   isActive: boolean;
+  description?: string;
   createdAt: string;
 }
 
@@ -30,7 +33,7 @@ export interface Booking {
   startTime: string;
   endTime: string;
   purpose: string;
-  attendees: number;
+  attendees: User[];
   status: 'pending' | 'confirmed' | 'cancelled';
   notes?: string;
   createdAt: string;
@@ -41,6 +44,40 @@ export interface BookingFormData {
   startTime: string;
   endTime: string;
   purpose: string;
-  attendees: number;
-  notes?: string;
-} 
+  attendees: string[];
+  notes: string;
+}
+
+export interface Notification {
+  _id: string;
+  user: string;
+  message: string;
+  booking?: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  errors?: string[];
+}
+
+export interface LoginResponse {
+  token: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

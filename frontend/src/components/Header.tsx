@@ -1,12 +1,59 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, User, Calendar, Building, Menu, X } from 'lucide-react';
+import { LogOut, User, Calendar, Building, Menu, X, Bell } from 'lucide-react';
+import { notificationsAPI } from '../services/api';
+import { Notification } from '../types';
+import { useEffect, useRef } from 'react';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchNotifications = async () => {
+      try {
+        const data = await notificationsAPI.getAll();
+        setNotifications(data);
+      } catch (error) {
+        // handle error
+      }
+    };
+    fetchNotifications();
+  }, [user]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleMarkRead = async (id: string) => {
+    await notificationsAPI.markRead(id);
+    setNotifications(notifications => notifications.map(n => n._id === id ? { ...n, read: true } : n));
+  };
+
+  const handleDelete = async (id: string) => {
+    await notificationsAPI.deleteOne(id);
+    setNotifications(notifications => notifications.filter(n => n._id !== id));
+  };
+
+  const handleDropdownToggle = () => setShowDropdown(v => !v);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDropdown]);
 
   const handleLogout = () => {
     logout();
@@ -55,6 +102,38 @@ const Header: React.FC = () => {
                   <span>Admin</span>
                 </Link>
               )}
+              {/* Notification Bell */}
+              <div className="relative">
+                <button onClick={handleDropdownToggle} className="relative focus:outline-none">
+                  <Bell className="w-5 h-5 text-gray-600 hover:text-primary-600" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+                {showDropdown && (
+                  <div ref={dropdownRef} className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    <div className="p-4 border-b font-semibold">Notifications</div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-gray-500 text-sm">No notifications</div>
+                      ) : notifications.map(n => (
+                        <div key={n._id} className={`flex items-start px-4 py-3 border-b last:border-b-0 ${n.read ? 'bg-white' : 'bg-blue-50'}`}>
+                          <div className="flex-1">
+                            <div className="text-sm text-gray-800 mb-1">{n.message}</div>
+                            <div className="text-xs text-gray-400">{new Date(n.createdAt).toLocaleString()}</div>
+                          </div>
+                          {!n.read && (
+                            <button onClick={() => handleMarkRead(n._id)} className="ml-2 text-xs text-blue-600 hover:underline">Mark as read</button>
+                          )}
+                          <button onClick={() => handleDelete(n._id)} className="ml-2 text-xs text-red-500 hover:underline">Delete</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               <button
                 onClick={handleLogout}
                 className="flex items-center space-x-2 text-gray-600 hover:text-red-600"
