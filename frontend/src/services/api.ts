@@ -156,7 +156,7 @@ export const boardroomsAPI = {
 // Bookings API
 export const bookingsAPI = {
   getAll: async () => {
-    const response = await fetch(`${API_BASE_URL}/bookings`, {
+    const response = await fetch(`${API_BASE_URL}/bookings/all`, {
       headers: getAuthHeaders(),
     });
     return handleResponse(response);

@@ -16,10 +16,16 @@ const AdminBookings: React.FC = () => {
 
   const fetchBookings = async () => {
     try {
+      console.log('Fetching admin bookings...');
       const data = await bookingsAPI.getAll();
-      setBookings(data);
+      console.log('Admin bookings data:', data);
+      
+      // Ensure data is an array
+      const bookingsArray = Array.isArray(data) ? data : [];
+      setBookings(bookingsArray);
     } catch (error) {
       console.error('Error fetching bookings:', error);
+      setBookings([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

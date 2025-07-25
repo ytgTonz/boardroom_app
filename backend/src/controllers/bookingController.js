@@ -203,28 +203,28 @@ const getBoardroomAvailability = async (req, res) => {
 
 const getAllBookings = async (req, res) => {
   try {
-    const { page = 1, limit = 50, status, boardroom } = req.query;
+    console.log('getAllBookings called by user:', req.user.userId);
+    
+    const { page = 1, limit = 1000, status, boardroom } = req.query;
     
     const filter = {};
     if (status) filter.status = status;
     if (boardroom) filter.boardroom = boardroom;
     
+    console.log('Filter:', filter);
+    
     const bookings = await Booking.find(filter)
       .populate('user', 'name email')
-      .populate('boardroom', 'name location')
+      .populate('boardroom', 'name location capacity amenities')
       .populate('attendees', 'name email')
       .sort({ startTime: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
       
-    const total = await Booking.countDocuments(filter);
+    console.log('Found bookings:', bookings.length);
     
-    res.json({
-      bookings,
-      total,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / limit)
-    });
+    // Return simple array instead of paginated response for easier frontend handling
+    res.json(bookings);
   } catch (error) {
     console.error('Get all bookings error:', error);
     res.status(500).json({ message: 'Server error' });

@@ -24,29 +24,48 @@ const AdminDashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
+      console.log('Fetching dashboard data...');
+      
       const [bookings, boardrooms, userStatsData] = await Promise.all([
-        bookingsAPI.getAll(),
-        boardroomsAPI.getAllAdmin(),
-        usersAPI.getStats()
+        bookingsAPI.getAll().catch(err => {
+          console.error('Error fetching bookings:', err);
+          return [];
+        }),
+        boardroomsAPI.getAllAdmin().catch(err => {
+          console.error('Error fetching boardrooms:', err);
+          return [];
+        }),
+        usersAPI.getStats().catch(err => {
+          console.error('Error fetching user stats:', err);
+          return { totalUsers: 0, adminUsers: 0, regularUsers: 0, recentUsers: [] };
+        })
       ]);
+
+      console.log('Fetched data:', { bookings, boardrooms, userStatsData });
+
+      // Ensure arrays are valid
+      const validBookings = Array.isArray(bookings) ? bookings : [];
+      const validBoardrooms = Array.isArray(boardrooms) ? boardrooms : [];
 
       // Calculate statistics
       const today = new Date().toDateString();
-      const todayBookings = bookings.filter((booking: Booking) => 
+      const todayBookings = validBookings.filter((booking: Booking) => 
         new Date(booking.startTime).toDateString() === today
       ).length;
 
-      const activeBoardrooms = boardrooms.filter((room: Boardroom) => room.isActive).length;
+      const activeBoardrooms = validBoardrooms.filter((room: Boardroom) => room.isActive).length;
 
       // Get recent bookings (last 5)
-      const recentBookings = bookings
+      const recentBookings = validBookings
         .sort((a: Booking, b: Booking) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 5);
 
       // Calculate top boardrooms by booking count
       const boardroomCounts: { [key: string]: number } = {};
-      bookings.forEach((booking: Booking) => {
-        boardroomCounts[booking.boardroom.name] = (boardroomCounts[booking.boardroom.name] || 0) + 1;
+      validBookings.forEach((booking: Booking) => {
+        if (booking.boardroom && booking.boardroom.name) {
+          boardroomCounts[booking.boardroom.name] = (boardroomCounts[booking.boardroom.name] || 0) + 1;
+        }
       });
 
       const topBoardrooms = Object.entries(boardroomCounts)
@@ -56,24 +75,28 @@ const AdminDashboard: React.FC = () => {
 
       // Calculate bookings by status
       const statusCounts: { [key: string]: number } = {};
-      bookings.forEach((booking: Booking) => {
-        statusCounts[booking.status] = (statusCounts[booking.status] || 0) + 1;
+      validBookings.forEach((booking: Booking) => {
+        if (booking.status) {
+          statusCounts[booking.status] = (statusCounts[booking.status] || 0) + 1;
+        }
       });
 
       const bookingsByStatus = Object.entries(statusCounts)
         .map(([status, count]) => ({ status, count }));
 
-      setStats({
-        totalBookings: bookings.length,
+      const dashboardStats = {
+        totalBookings: validBookings.length,
         todayBookings,
-        totalBoardrooms: boardrooms.length,
+        totalBoardrooms: validBoardrooms.length,
         activeBoardrooms,
-        totalUsers: userStatsData.totalUsers,
+        totalUsers: userStatsData.totalUsers || 0,
         recentBookings,
         topBoardrooms,
         bookingsByStatus
-      });
+      };
 
+      console.log('Calculated stats:', dashboardStats);
+      setStats(dashboardStats);
       setUserStats(userStatsData);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
