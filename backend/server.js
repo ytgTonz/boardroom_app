@@ -1,3 +1,4 @@
+// backend/server.js (UPDATED WITH EMAIL)
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -5,6 +6,10 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
+
+// Import services
+const emailService = require('./src/services/emailService');
+const reminderScheduler = require('./src/services/reminderScheduler');
 
 const authRoutes = require('./src/routes/auth');
 const boardroomRoutes = require('./src/routes/boardrooms');
@@ -53,6 +58,12 @@ mongoose.connect(mongoUri, {
 .then(() => {
   console.log('✅ Connected to MongoDB successfully');
   console.log(`📊 Database: ${mongoUri.split('/').pop()}`);
+  
+  // Initialize email service after DB connection
+  console.log('📧 Initializing email service...');
+  
+  // Initialize reminder scheduler after DB connection
+  console.log('⏰ Initializing meeting reminder scheduler...');
 })
 .catch(err => {
   console.error('❌ MongoDB connection error:', err);
@@ -72,9 +83,29 @@ app.get('/api/health', (req, res) => {
     status: 'OK', 
     timestamp: new Date().toISOString(),
     database: dbStatus,
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    emailService: 'active',
+    reminderService: 'active'
   });
 });
+
+// Email test endpoint (for development)
+if (process.env.NODE_ENV === 'development') {
+  app.post('/api/test-email', async (req, res) => {
+    try {
+      const { to, subject, message } = req.body;
+      
+      if (!to || !subject || !message) {
+        return res.status(400).json({ message: 'Missing required fields: to, subject, message' });
+      }
+      
+      const result = await emailService.sendEmail(to, subject, message);
+      res.json({ message: 'Test email sent', result });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to send test email', error: error.message });
+    }
+  });
+}
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -82,7 +113,15 @@ app.get('/', (req, res) => {
     message: 'Boardroom Booking API',
     version: '1.0.0',
     status: 'running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    features: [
+      'Authentication',
+      'Boardroom Management',
+      'Booking System',
+      'Email Notifications',
+      'Meeting Reminders',
+      'Push Notifications'
+    ]
   });
 });
 
@@ -102,4 +141,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
-}); 
+  console.log(`📧 Email service: ${process.env.EMAIL_USER ? 'Configured' : 'Using test mode'}`);
+});

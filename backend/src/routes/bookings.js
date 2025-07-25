@@ -17,7 +17,7 @@ router.get('/my-bookings', authenticateToken, getUserBookings);
 router.post('/', authenticateToken, validateBooking, createBooking);
 router.delete('/:id', authenticateToken, cancelBooking);
 router.patch('/:id/opt-out', authenticateToken, optOutOfBooking); // Opt-out route
-
+router.put('/:id/cancel', authenticateToken, cancelBooking);
 // Public routes
 router.get('/availability/:id', getBoardroomAvailability);
 

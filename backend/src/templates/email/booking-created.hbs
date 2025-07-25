@@ -1,0 +1,62 @@
+<!-- backend/src/templates/email/booking-created.hbs -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Invitation</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #3B82F6; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
+        .meeting-details { background: white; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #3B82F6; }
+        .button { display: inline-block; background: #3B82F6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+        .amenities { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .amenity { background: #EBF8FF; color: #2563EB; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📅 Meeting Invitation</h1>
+    </div>
+    
+    <div class="content">
+        <p>Hello <strong>{{user.name}}</strong>,</p>
+        
+        <p>You have been invited to a meeting organized by <strong>{{organizer.name}}</strong>.</p>
+        
+        <div class="meeting-details">
+            <h3>{{booking.purpose}}</h3>
+            
+            <p><strong>📍 Location:</strong> {{booking.boardroom.name}} ({{booking.boardroom.location}})</p>
+            <p><strong>🕐 Date & Time:</strong> {{formatDate booking.startTime}} - {{formatTime booking.endTime}}</p>
+            <p><strong>👥 Capacity:</strong> {{booking.boardroom.capacity}} people</p>
+            
+            {{#if booking.boardroom.amenities}}
+            <p><strong>🛠️ Available Amenities:</strong></p>
+            <div class="amenities">
+                {{#each booking.boardroom.amenities}}
+                <span class="amenity">{{this}}</span>
+                {{/each}}
+            </div>
+            {{/if}}
+            
+            {{#if booking.notes}}
+            <p><strong>📝 Notes:</strong> {{booking.notes}}</p>
+            {{/if}}
+        </div>
+        
+        <p>Please add this meeting to your calendar and arrive on time.</p>
+        
+        <div style="text-align: center;">
+            <a href="#" class="button">View Meeting Details</a>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated message from the Boardroom Booking System.</p>
+        <p>If you have any questions, please contact the meeting organizer.</p>
+    </div>
+</body>
+</html>

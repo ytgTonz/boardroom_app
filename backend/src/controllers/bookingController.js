@@ -1,13 +1,14 @@
-// backend/src/controllers/bookingController.js (FIXED VERSION)
+// backend/src/controllers/bookingController.js (UPDATED WITH EMAIL)
 const Booking = require('../models/Booking');
 const Boardroom = require('../models/Boardroom');
+const User = require('../models/User');
 const Notification = require('../models/Notification');
+const emailService = require('../services/emailService');
 
 const getUserBookings = async (req, res) => {
   try {
-    // Find bookings where the user is in the attendees array
     const bookings = await Booking.find({ attendees: req.user.userId })
-      .populate('user', 'name email') // Fixed typo: eamil_id -> email
+      .populate('user', 'name email')
       .populate('boardroom', 'name location capacity amenities')
       .populate('attendees', 'name email')
       .sort({ startTime: -1 });
@@ -38,7 +39,7 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Start time must be in the future' });
     }
     
-    // Check for boardroom conflicts (improved logic)
+    // Check for boardroom conflicts
     const conflict = await Booking.findOne({
       boardroom,
       status: 'confirmed',
@@ -78,6 +79,10 @@ const createBooking = async (req, res) => {
     
     await booking.save();
     
+    // Get full user details for email notifications
+    const organizer = await User.findById(req.user.userId);
+    const attendeeUsers = await User.find({ _id: { $in: allAttendees } });
+    
     // Create notifications for attendees (except creator)
     const notificationPromises = allAttendees
       .filter(id => id.toString() !== req.user.userId)
@@ -89,11 +94,29 @@ const createBooking = async (req, res) => {
     
     await Promise.all(notificationPromises);
     
-    // Return populated booking
+    // Get populated booking for email
     const populatedBooking = await Booking.findById(booking._id)
       .populate('user', 'name email')
       .populate('boardroom', 'name location capacity amenities')
       .populate('attendees', 'name email');
+    
+    // Send email notifications
+    try {
+      // Send confirmation email to organizer
+      await emailService.sendBookingNotification(populatedBooking, organizer, organizer, 'created');
+      
+      // Send invitation emails to attendees
+      const emailPromises = attendeeUsers
+        .filter(user => user._id.toString() !== req.user.userId)
+        .map(user => emailService.sendBookingNotification(populatedBooking, user, organizer, 'created'));
+      
+      const emailResults = await Promise.all(emailPromises);
+      
+      console.log('📧 Email notifications sent:', emailResults.length);
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Don't fail the booking creation if email fails
+    }
     
     res.status(201).json(populatedBooking);
   } catch (error) {
@@ -109,7 +132,8 @@ const cancelBooking = async (req, res) => {
       user: req.user.userId,
       status: 'confirmed' 
     }).populate('boardroom', 'name location')
-      .populate('attendees', 'name email');
+      .populate('attendees', 'name email')
+      .populate('user', 'name email');
     
     if (!booking) {
       return res.status(404).json({ 
@@ -121,7 +145,7 @@ const cancelBooking = async (req, res) => {
     booking.status = 'cancelled';
     await booking.save();
     
-    // Notify attendees about cancellation
+    // Create notifications for attendees about cancellation
     const notificationPromises = booking.attendees
       .filter(attendee => attendee._id.toString() !== req.user.userId)
       .map(attendee => Notification.create({
@@ -131,6 +155,17 @@ const cancelBooking = async (req, res) => {
       }));
     
     await Promise.all(notificationPromises);
+    
+    // Send cancellation emails
+    try {
+      const cancellationPromises = booking.attendees.map(user => 
+        emailService.sendBookingNotification(booking, user, booking.user, 'cancelled')
+      );
+      await Promise.all(cancellationPromises);
+      console.log('📧 Cancellation emails sent to attendees');
+    } catch (emailError) {
+      console.error('Cancellation email sending failed:', emailError);
+    }
     
     res.json({ message: 'Booking cancelled successfully', booking });
   } catch (error) {
@@ -199,15 +234,16 @@ const getAllBookings = async (req, res) => {
 const optOutOfBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
-      .populate('user', 'name')
-      .populate('boardroom', 'name');
+      .populate('user', 'name email')
+      .populate('boardroom', 'name')
+      .populate('attendees', 'name email');
       
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
     
     // Check if user is in attendees
-    if (!booking.attendees.includes(req.user.userId)) {
+    if (!booking.attendees.some(attendee => attendee._id.toString() === req.user.userId)) {
       return res.status(400).json({ message: 'You are not an attendee of this booking' });
     }
     
@@ -218,19 +254,46 @@ const optOutOfBooking = async (req, res) => {
       });
     }
     
+    // Get user info before removing from attendees
+    const optOutUser = await User.findById(req.user.userId);
+    
     // Remove user from attendees
     booking.attendees = booking.attendees.filter(
-      (attendeeId) => attendeeId.toString() !== req.user.userId
+      (attendee) => attendee._id.toString() !== req.user.userId
     );
     
     await booking.save();
     
-    // Notify organizer
+    // Notify organizer about opt-out
     await Notification.create({
       user: booking.user._id,
-      message: `Someone opted out of your meeting "${booking.purpose}" in ${booking.boardroom.name}`,
+      message: `${optOutUser.name} opted out of your meeting "${booking.purpose}" in ${booking.boardroom.name}`,
       booking: booking._id
     });
+    
+    // Send email notification to organizer
+    try {
+      await emailService.sendEmail(
+        booking.user.email,
+        `Attendee Opted Out: ${booking.purpose}`,
+        `
+        Hello ${booking.user.name},
+        
+        ${optOutUser.name} has opted out of your meeting:
+        
+        Meeting: ${booking.purpose}
+        Room: ${booking.boardroom.name}
+        Time: ${new Date(booking.startTime).toLocaleString()}
+        
+        Please plan accordingly.
+        
+        Best regards,
+        Boardroom Booking System
+        `
+      );
+    } catch (emailError) {
+      console.error('Opt-out email sending failed:', emailError);
+    }
     
     res.json({ message: 'You have opted out of this meeting', booking });
   } catch (error) {
