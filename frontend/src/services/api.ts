@@ -134,6 +134,23 @@ export const boardroomsAPI = {
     });
     return handleResponse(response);
   },
+
+  uploadImage: async (id: string, file: File, alt: string = '', isPrimary: boolean = false) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('alt', alt);
+    formData.append('isPrimary', isPrimary.toString());
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/boardrooms/${id}/upload-image`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+    return handleResponse(response);
+  },
 };
 
 // Bookings API
@@ -198,8 +215,41 @@ export const bookingsAPI = {
 // Users API
 export const usersAPI = {
   getAll: async () => {
-    const response = await fetch(`${API_BASE_URL}/auth/users`, {
+    const response = await fetch(`${API_BASE_URL}/users`, {
       headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  getStats: async () => {
+    const response = await fetch(`${API_BASE_URL}/users/stats`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  updateRole: async (id: string, role: string) => {
+    const response = await fetch(`${API_BASE_URL}/users/${id}/role`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ role }),
+    });
+    return handleResponse(response);
+  },
+
+  delete: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/users/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  resetPassword: async (id: string, newPassword: string) => {
+    const response = await fetch(`${API_BASE_URL}/users/${id}/reset-password`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ newPassword }),
     });
     return handleResponse(response);
   },

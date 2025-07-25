@@ -12,6 +12,7 @@ export interface BoardroomImage {
   url: string;
   alt: string;
   isPrimary: boolean;
+  fileId?: string; // ImageKit file ID for deletion
 }
 
 export interface Boardroom {
@@ -80,4 +81,11 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface UserStats {
+  totalUsers: number;
+  adminUsers: number;
+  regularUsers: number;
+  recentUsers: User[];
 }

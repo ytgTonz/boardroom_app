@@ -12,6 +12,9 @@ import BookingForm from './components/BookingForm';
 import MyBookings from './components/MyBookings';
 import BoardroomList from './components/BoardroomList';
 import AdminBoardrooms from './components/AdminBoardrooms';
+import AdminUsers from './components/AdminUsers';
+import AdminBookings from './components/AdminBookings';
+import AdminDashboard from './components/AdminDashboard';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // Set up axios defaults
@@ -40,7 +43,11 @@ const AppContent = () => {
             <Route path="/book" element={user ? <BookingForm /> : <Navigate to="/login" />} />
             <Route path="/my-bookings" element={user ? <MyBookings /> : <Navigate to="/login" />} />
             <Route path="/boardrooms" element={<BoardroomList />} />
+            <Route path="/admin" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
+            <Route path="/admin/dashboard" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
             <Route path="/admin/boardrooms" element={user?.role === 'admin' ? <AdminBoardrooms /> : <Navigate to="/" />} />
+            <Route path="/admin/bookings" element={user?.role === 'admin' ? <AdminBookings /> : <Navigate to="/" />} />
+            <Route path="/admin/users" element={user?.role === 'admin' ? <AdminUsers /> : <Navigate to="/" />} />
           </Routes>
         </main>
         {/* ToastContainer for react-toastify */}

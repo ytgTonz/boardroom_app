@@ -15,6 +15,7 @@ const authRoutes = require('./src/routes/auth');
 const boardroomRoutes = require('./src/routes/boardrooms');
 const bookingRoutes = require('./src/routes/bookings');
 const notificationRoutes = require('./src/routes/notifications');
+const userRoutes = require('./src/routes/users');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -75,6 +76,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/boardrooms', boardroomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

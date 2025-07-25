@@ -32,6 +32,10 @@ const boardroomSchema = new mongoose.Schema({
     isPrimary: {
       type: Boolean,
       default: false
+    },
+    fileId: {
+      type: String,
+      // ImageKit file ID for deletion
     }
   }],
   isActive: { 
