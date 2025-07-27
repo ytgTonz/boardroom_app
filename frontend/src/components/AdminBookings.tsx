@@ -3,6 +3,7 @@ import { bookingsAPI } from '../services/api';
 import { Booking } from '../types';
 
 const AdminBookings: React.FC = () => {
+  console.log('AdminBookings component rendering...');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,9 +108,9 @@ const AdminBookings: React.FC = () => {
   const filteredBookings = bookings.filter(booking => {
     const matchesStatus = filterStatus === 'all' || booking.status === filterStatus;
     const matchesSearch = !searchTerm || 
-      booking.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.boardroom.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.purpose.toLowerCase().includes(searchTerm.toLowerCase());
+      booking.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.boardroom?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.purpose?.toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesStatus && matchesSearch;
   });
@@ -259,7 +260,7 @@ const AdminBookings: React.FC = () => {
       </div>
 
       {/* Bookings Table */}
-      <div className="card overflow-hidden">
+      <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -289,8 +290,8 @@ const AdminBookings: React.FC = () => {
                 <tr key={booking._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{booking.user.name}</div>
-                      <div className="text-sm text-gray-500">{booking.boardroom.name}</div>
+                      <div className="text-sm font-medium text-gray-900">{booking.user?.name || 'Unknown User'}</div>
+                      <div className="text-sm text-gray-500">{booking.boardroom?.name || 'Unknown Room'}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -317,7 +318,7 @@ const AdminBookings: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {booking.attendees.length} people
+                    {booking.attendees?.length || 0} people
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">

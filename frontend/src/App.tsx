@@ -15,7 +15,7 @@ import AdminBoardrooms from './components/AdminBoardrooms';
 import AdminUsers from './components/AdminUsers';
 import AdminBookings from './components/AdminBookings';
 import AdminDashboard from './components/AdminDashboard';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { useAuth } from './contexts/AuthContext';
 
 // Set up axios defaults
 axios.defaults.baseURL = 'http://localhost:5000/api';
@@ -47,6 +47,7 @@ const AppContent = () => {
             <Route path="/admin/dashboard" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
             <Route path="/admin/boardrooms" element={user?.role === 'admin' ? <AdminBoardrooms /> : <Navigate to="/" />} />
             <Route path="/admin/bookings" element={user?.role === 'admin' ? <AdminBookings /> : <Navigate to="/" />} />
+            <Route path="/admin/booking" element={<Navigate to="/admin/bookings" replace />} />
             <Route path="/admin/users" element={user?.role === 'admin' ? <AdminUsers /> : <Navigate to="/" />} />
           </Routes>
         </main>
@@ -69,11 +70,7 @@ const AppContent = () => {
 };
 
 const App = () => {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  );
+  return <AppContent />;
 };
 
 export default App; 

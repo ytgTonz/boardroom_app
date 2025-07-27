@@ -1,7 +1,7 @@
 // frontend/src/contexts/AuthContext.tsx (FIXED VERSION)
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authAPI } from '../services/api';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../redux/hooks';
 import { setUser as setReduxUser, clearUser } from '../../redux/user-store/userSlice';
 
