@@ -95,9 +95,7 @@ const BookingForm: React.FC = () => {
       newErrors.purpose = 'Please enter a purpose for the meeting';
     }
 
-    if (!formData.attendees || formData.attendees.length === 0) {
-      newErrors.attendees = 'Please select at least one attendee';
-    }
+    // Attendees are now optional - no validation required
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -299,7 +297,7 @@ const BookingForm: React.FC = () => {
             {/* Attendees Multi-Select */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Attendees *
+                Attendees
               </label>
               <Select
                 isMulti
