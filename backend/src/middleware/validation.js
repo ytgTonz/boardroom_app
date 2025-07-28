@@ -88,11 +88,24 @@ const validateBooking = [
     .isLength({ min: 2, max: 200 })
     .withMessage('Purpose must be between 2 and 200 characters'),
   body('attendees')
-    .isArray({ min: 1 })
-    .withMessage('At least one attendee is required'),
-  body('attendees.*')
-    .isMongoId()
-    .withMessage('Invalid attendee ID'),
+    .optional()
+    .custom((attendees) => {
+      // Handle both old format (array of strings) and new format (object with users/external)
+      if (attendees) {
+        if (Array.isArray(attendees)) {
+          // Old format - validate as array of MongoDB IDs
+          return attendees.every(id => /^[0-9a-fA-F]{24}$/.test(id));
+        } else if (typeof attendees === 'object') {
+          // New format - validate users array and external emails array
+          const { users = [], external = [] } = attendees;
+          const validUsers = users.every(id => /^[0-9a-fA-F]{24}$/.test(id));
+          const validEmails = external.every(email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+          return validUsers && validEmails;
+        }
+      }
+      return true; // Optional field, so undefined/null is valid
+    })
+    .withMessage('Invalid attendees format'),
   body('notes')
     .optional()
     .trim()
