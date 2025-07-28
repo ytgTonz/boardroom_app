@@ -15,6 +15,7 @@ import AdminBoardrooms from './components/AdminBoardrooms';
 import AdminUsers from './components/AdminUsers';
 import AdminBookings from './components/AdminBookings';
 import AdminDashboard from './components/AdminDashboard';
+import CalendarView from './components/CalendarView';
 import { useAuth } from './contexts/AuthContext';
 
 // Set up axios defaults
@@ -42,6 +43,7 @@ const AppContent = () => {
             <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
             <Route path="/book" element={user ? <BookingForm /> : <Navigate to="/login" />} />
             <Route path="/my-bookings" element={user ? <MyBookings /> : <Navigate to="/login" />} />
+            <Route path="/calendar" element={user ? <CalendarView userId={user._id} /> : <Navigate to="/login" />} />
             <Route path="/boardrooms" element={<BoardroomList />} />
             <Route path="/admin" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
             <Route path="/admin/dashboard" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
