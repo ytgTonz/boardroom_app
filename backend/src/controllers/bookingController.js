@@ -87,6 +87,7 @@ const createBooking = async (req, res) => {
       externalAttendees: externalAttendees,
       notes: notes || ''
     });
+    console.log("start time saved", startTime)
     
     await booking.save();
     
@@ -332,9 +333,177 @@ const optOutOfBooking = async (req, res) => {
   }
 };
 
+const updateBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { boardroom, startTime, endTime, purpose, attendees, notes } = req.body;
+    
+    // Find existing booking
+    const existingBooking = await Booking.findOne({ 
+      _id: id, 
+      user: req.user.userId,
+      status: 'confirmed' 
+    });
+    
+    if (!existingBooking) {
+      return res.status(404).json({ 
+        message: 'Booking not found or you do not have permission to edit it' 
+      });
+    }
+
+    // Handle attendees format (same logic as createBooking)
+    let userAttendees = [];
+    let externalAttendees = [];
+    
+    if (attendees) {
+      if (Array.isArray(attendees)) {
+        userAttendees = attendees;
+      } else if (attendees.users || attendees.external) {
+        userAttendees = attendees.users || [];
+        externalAttendees = (attendees.external || []).map(email => ({ email }));
+      }
+    }
+    
+    // Add the creator to user attendees if not already included
+    const allUserAttendees = userAttendees.includes(req.user.userId) 
+      ? userAttendees 
+      : [...userAttendees, req.user.userId];
+
+    // Validate boardroom exists and is active (if boardroom is being changed)
+    if (boardroom && boardroom !== existingBooking.boardroom.toString()) {
+      const boardroomExists = await Boardroom.findOne({ _id: boardroom, isActive: true });
+      if (!boardroomExists) {
+        return res.status(400).json({ message: 'Boardroom not found or inactive' });
+      }
+    }
+    
+    // Validate time is in future (if start time is being changed)
+    if (startTime && new Date(startTime) <= new Date()) {
+      return res.status(400).json({ message: 'Start time must be in the future' });
+    }
+    
+    // Check for boardroom conflicts (exclude current booking)
+    const finalBoardroom = boardroom || existingBooking.boardroom;
+    const finalStartTime = startTime || existingBooking.startTime;
+    const finalEndTime = endTime || existingBooking.endTime;
+    
+    const conflict = await Booking.findOne({
+      _id: { $ne: id }, // Exclude current booking
+      boardroom: finalBoardroom,
+      status: 'confirmed',
+      $or: [
+        { 
+          startTime: { $lt: new Date(finalEndTime) }, 
+          endTime: { $gt: new Date(finalStartTime) }
+        }
+      ]
+    });
+    
+    if (conflict) {
+      return res.status(400).json({ 
+        message: 'Boardroom is already booked for this time slot',
+        conflictingBooking: {
+          purpose: conflict.purpose,
+          startTime: conflict.startTime,
+          endTime: conflict.endTime
+        }
+      });
+    }
+
+    // Store old values for comparison
+    const oldBoardroom = existingBooking.boardroom;
+    const oldStartTime = existingBooking.startTime;
+    const oldEndTime = existingBooking.endTime;
+    const oldAttendees = existingBooking.attendees;
+    const oldExternalAttendees = existingBooking.externalAttendees || [];
+
+    // Update booking
+    if (boardroom) existingBooking.boardroom = boardroom;
+    if (startTime) existingBooking.startTime = new Date(startTime);
+    if (endTime) existingBooking.endTime = new Date(endTime);
+    if (purpose) existingBooking.purpose = purpose;
+    if (attendees !== undefined) {
+      existingBooking.attendees = allUserAttendees;
+      existingBooking.externalAttendees = externalAttendees;
+    }
+    if (notes !== undefined) existingBooking.notes = notes;
+
+    await existingBooking.save();
+
+    // Get populated booking for response and emails
+    const updatedBooking = await Booking.findById(id)
+      .populate('user', 'name email')
+      .populate('boardroom', 'name location capacity amenities')
+      .populate('attendees', 'name email');
+
+    // Determine what changed for notifications
+    const boardroomChanged = boardroom && boardroom !== oldBoardroom.toString();
+    const timeChanged = (startTime && startTime !== oldStartTime.toISOString()) || 
+                       (endTime && endTime !== oldEndTime.toISOString());
+    const attendeesChanged = attendees !== undefined;
+
+    // Send notifications if significant changes occurred
+    if (boardroomChanged || timeChanged || attendeesChanged) {
+      try {
+        // Get organizer details
+        const organizer = await User.findById(req.user.userId);
+        const attendeeUsers = await User.find({ _id: { $in: allUserAttendees } });
+
+        // Create notifications for user attendees (except creator)
+        const notificationPromises = allUserAttendees
+          .filter(id => id.toString() !== req.user.userId)
+          .map(id => Notification.create({
+            user: id,
+            message: `Meeting "${updatedBooking.purpose}" has been updated`,
+            booking: updatedBooking._id
+          }));
+        
+        await Promise.all(notificationPromises);
+
+        // Send update emails to registered user attendees
+        const userEmailPromises = attendeeUsers
+          .filter(user => user._id.toString() !== req.user.userId)
+          .map(user => emailService.sendBookingNotification(updatedBooking, user, organizer, 'updated'));
+        
+        // Send update emails to external attendees
+        const externalEmailPromises = externalAttendees.map(async (external) => {
+          const emailData = {
+            to: external.email,
+            subject: `Meeting Update: ${updatedBooking.purpose}`,
+            html: `
+              <h2>Meeting Updated</h2>
+              <p><strong>Meeting:</strong> ${updatedBooking.purpose}</p>
+              <p><strong>Organizer:</strong> ${organizer.name} (${organizer.email})</p>
+              <p><strong>Room:</strong> ${updatedBooking.boardroom.name} - ${updatedBooking.boardroom.location}</p>
+              <p><strong>Time:</strong> ${new Date(updatedBooking.startTime).toLocaleString()} - ${new Date(updatedBooking.endTime).toLocaleString()}</p>
+              ${updatedBooking.notes ? `<p><strong>Notes:</strong> ${updatedBooking.notes}</p>` : ''}
+              <p>The meeting details have been updated. Please check your calendar.</p>
+            `
+          };
+          return emailService.sendEmail(emailData.to, emailData.subject, emailData.html);
+        });
+        
+        const allEmailPromises = [...userEmailPromises, ...externalEmailPromises];
+        await Promise.all(allEmailPromises);
+        
+        console.log('📧 Update notifications sent');
+      } catch (emailError) {
+        console.error('Update email sending failed:', emailError);
+        // Don't fail the update if email fails
+      }
+    }
+
+    res.json(updatedBooking);
+  } catch (error) {
+    console.error('Update booking error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getUserBookings,
   createBooking,
+  updateBooking,
   cancelBooking,
   getBoardroomAvailability,
   getAllBookings,

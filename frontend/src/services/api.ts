@@ -187,10 +187,20 @@ export const bookingsAPI = {
   },
 
   update: async (id: string, bookingData: any) => {
+    // Transform attendees data for backend if needed
+    const transformedData = bookingData.attendees && Array.isArray(bookingData.attendees) && 
+                           bookingData.attendees.some((a: any) => a.type) ? {
+      ...bookingData,
+      attendees: {
+        users: bookingData.attendees.filter((a: any) => a.type === 'user').map((a: any) => a.value),
+        external: bookingData.attendees.filter((a: any) => a.type === 'external').map((a: any) => a.email!)
+      }
+    } : bookingData;
+
     const response = await fetch(`${API_BASE_URL}/bookings/${id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
-      body: JSON.stringify(bookingData),
+      body: JSON.stringify(transformedData),
     });
     return handleResponse(response);
   },

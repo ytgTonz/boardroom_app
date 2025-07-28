@@ -114,9 +114,62 @@ const validateBooking = [
   handleValidationErrors
 ];
 
+// Booking update validation (all fields optional)
+const validateBookingUpdate = [
+  body('boardroom')
+    .optional()
+    .isMongoId()
+    .withMessage('Invalid boardroom ID'),
+  body('startTime')
+    .optional()
+    .isISO8601()
+    .withMessage('Start time must be a valid datetime'),
+  body('endTime')
+    .optional()
+    .isISO8601()
+    .withMessage('End time must be a valid datetime')
+    .custom((endTime, { req }) => {
+      if (endTime && req.body.startTime && new Date(endTime) <= new Date(req.body.startTime)) {
+        throw new Error('End time must be after start time');
+      }
+      return true;
+    }),
+  body('purpose')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 200 })
+    .withMessage('Purpose must be between 2 and 200 characters'),
+  body('attendees')
+    .optional()
+    .custom((attendees) => {
+      // Handle both old format (array of strings) and new format (object with users/external)
+      if (attendees) {
+        if (Array.isArray(attendees)) {
+          // Old format - validate as array of MongoDB IDs
+          return attendees.every(id => /^[0-9a-fA-F]{24}$/.test(id));
+        } else if (typeof attendees === 'object') {
+          // New format - validate users array and external emails array
+          const { users = [], external = [] } = attendees;
+          const validUsers = users.every(id => /^[0-9a-fA-F]{24}$/.test(id));
+          const validEmails = external.every(email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+          return validUsers && validEmails;
+        }
+      }
+      return true; // Optional field, so undefined/null is valid
+    })
+    .withMessage('Invalid attendees format'),
+  body('notes')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Notes cannot exceed 1000 characters'),
+  handleValidationErrors
+];
+
 module.exports = {
   validateRegistration,
   validateLogin,
   validateBoardroom,
-  validateBooking
+  validateBooking,
+  validateBookingUpdate
 };

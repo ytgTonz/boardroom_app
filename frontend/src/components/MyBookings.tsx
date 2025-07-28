@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { bookingsAPI } from '../services/api';
 import { Booking } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import EditBookingForm from './EditBookingForm';
 
 const MyBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -9,6 +10,7 @@ const MyBookings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
 
   const { user } = useAuth();
 
@@ -104,6 +106,23 @@ const MyBookings: React.FC = () => {
     } catch (error: any) {
       alert(error.message || 'Failed to opt out');
     }
+  };
+
+  const handleEditBooking = (booking: Booking) => {
+    setEditingBooking(booking);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingBooking(null);
+  };
+
+  const handleUpdateBooking = async (updatedBooking: Booking) => {
+    // Update the booking in the local state
+    const updatedBookings = bookings.map(booking => 
+      booking._id === updatedBooking._id ? updatedBooking : booking
+    );
+    setBookings(updatedBookings);
+    setEditingBooking(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -323,6 +342,15 @@ const MyBookings: React.FC = () => {
                   
                   {/* Action Buttons - Improved logic */}    
                   <div className="flex items-center space-x-2">
+                    {/* Show Edit if user is the creator and booking is confirmed and not in the past */}
+                    {isUserCreator(booking) && booking.status === 'confirmed' && !isBookingPast(booking.startTime) && (
+                      <button
+                        onClick={() => handleEditBooking(booking)}
+                        className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                      >
+                        Edit
+                      </button>
+                    )}
                     {/* Show Cancel if user is the creator */}
                     {shouldShowCancelButton(booking) && (
                       <button
@@ -366,6 +394,19 @@ const MyBookings: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Booking Modal/Form */}
+      {editingBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <EditBookingForm
+              booking={editingBooking}
+              onCancel={handleCancelEdit}
+              onUpdate={handleUpdateBooking}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
