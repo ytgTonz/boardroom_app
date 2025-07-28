@@ -5,8 +5,8 @@ const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get all users (admin only)
-router.get('/', authenticateToken, requireAdmin, async (req, res) => {
+// Get all users (authenticated users)
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const users = await User.find({}, '-password')
       .sort({ createdAt: -1 });
