@@ -23,9 +23,19 @@ const createBooking = async (req, res) => {
   try {
     const { boardroom, startTime, endTime, purpose, attendees, notes } = req.body;
     
-    // Validate attendees array
-    if (!Array.isArray(attendees) || attendees.length === 0) {
-      return res.status(400).json({ message: 'Attendees must be a non-empty array of user IDs' });
+    // Handle both old format (array of strings) and new format (object with users/external)
+    let userAttendees = [];
+    let externalAttendees = [];
+    
+    if (attendees) {
+      if (Array.isArray(attendees)) {
+        // Old format - array of user IDs
+        userAttendees = attendees;
+      } else if (attendees.users || attendees.external) {
+        // New format - object with users and external arrays
+        userAttendees = attendees.users || [];
+        externalAttendees = (attendees.external || []).map(email => ({ email }));
+      }
     }
     
     // Validate boardroom exists and is active
@@ -62,10 +72,10 @@ const createBooking = async (req, res) => {
       });
     }
     
-    // Add the creator to attendees if not already included
-    const allAttendees = attendees.includes(req.user.userId) 
-      ? attendees 
-      : [...attendees, req.user.userId];
+    // Add the creator to user attendees if not already included
+    const allUserAttendees = userAttendees.includes(req.user.userId) 
+      ? userAttendees 
+      : [...userAttendees, req.user.userId];
     
     const booking = new Booking({
       user: req.user.userId,
@@ -73,7 +83,8 @@ const createBooking = async (req, res) => {
       startTime: new Date(startTime),
       endTime: new Date(endTime),
       purpose,
-      attendees: allAttendees,
+      attendees: allUserAttendees,
+      externalAttendees: externalAttendees,
       notes: notes || ''
     });
     
@@ -81,10 +92,10 @@ const createBooking = async (req, res) => {
     
     // Get full user details for email notifications
     const organizer = await User.findById(req.user.userId);
-    const attendeeUsers = await User.find({ _id: { $in: allAttendees } });
+    const attendeeUsers = await User.find({ _id: { $in: allUserAttendees } });
     
-    // Create notifications for attendees (except creator)
-    const notificationPromises = allAttendees
+    // Create notifications for user attendees (except creator)
+    const notificationPromises = allUserAttendees
       .filter(id => id.toString() !== req.user.userId)
       .map(id => Notification.create({
         user: id,
@@ -105,12 +116,31 @@ const createBooking = async (req, res) => {
       // Send confirmation email to organizer
       await emailService.sendBookingNotification(populatedBooking, organizer, organizer, 'created');
       
-      // Send invitation emails to attendees
-      const emailPromises = attendeeUsers
+      // Send invitation emails to registered user attendees
+      const userEmailPromises = attendeeUsers
         .filter(user => user._id.toString() !== req.user.userId)
         .map(user => emailService.sendBookingNotification(populatedBooking, user, organizer, 'created'));
       
-      const emailResults = await Promise.all(emailPromises);
+      // Send invitation emails to external attendees
+      const externalEmailPromises = externalAttendees.map(async (external) => {
+        const emailData = {
+          to: external.email,
+          subject: `Meeting Invitation: ${purpose}`,
+          html: `
+            <h2>You're invited to a meeting</h2>
+            <p><strong>Meeting:</strong> ${purpose}</p>
+            <p><strong>Organizer:</strong> ${organizer.name} (${organizer.email})</p>
+            <p><strong>Room:</strong> ${boardroomExists.name} - ${boardroomExists.location}</p>
+            <p><strong>Time:</strong> ${new Date(startTime).toLocaleString()} - ${new Date(endTime).toLocaleString()}</p>
+            ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+            <p>Please contact the organizer if you have any questions.</p>
+          `
+        };
+        return emailService.sendEmail(emailData.to, emailData.subject, emailData.html);
+      });
+      
+      const allEmailPromises = [...userEmailPromises, ...externalEmailPromises];
+      const emailResults = await Promise.all(allEmailPromises);
       
       console.log('📧 Email notifications sent:', emailResults.length);
     } catch (emailError) {

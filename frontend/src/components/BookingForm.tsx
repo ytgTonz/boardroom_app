@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { boardroomsAPI, bookingsAPI, usersAPI } from '../services/api';
-import { Boardroom, BookingFormData, User } from '../types';
+import { Boardroom, BookingFormData, User, AttendeeOption } from '../types';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
 
@@ -19,6 +19,7 @@ const BookingForm: React.FC = () => {
     attendees: [],
     notes: ''
   });
+  const [externalEmail, setExternalEmail] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [users, setUsers] = useState<User[]>([]);
 
@@ -109,7 +110,15 @@ const BookingForm: React.FC = () => {
     }
     setSubmitting(true);
     try {
-      await bookingsAPI.create(formData);
+      // Transform attendees data for backend
+      const bookingData = {
+        ...formData,
+        attendees: {
+          users: formData.attendees.filter(a => a.type === 'user').map(a => a.value),
+          external: formData.attendees.filter(a => a.type === 'external').map(a => a.email!)
+        }
+      };
+      await bookingsAPI.create(bookingData);
       toast.success('Booking created successfully!');
       
       // Reset form
@@ -121,6 +130,7 @@ const BookingForm: React.FC = () => {
         attendees: [],
         notes: ''
       });
+      setExternalEmail('');
       setSelectedBoardroom('');
     } catch (error: any) {
       toast.error(error.message || 'Failed to create booking');
@@ -144,13 +154,63 @@ const BookingForm: React.FC = () => {
     }
   };
 
-  const attendeeOptions = users.map(user => ({ value: user._id, label: `${user.name} (${user.email})` }));
+  const attendeeOptions = users.map(user => ({ 
+    type: 'user' as const,
+    value: user._id, 
+    label: `${user.name} (${user.email})`,
+    email: user.email
+  }));
 
   const handleAttendeesChange = (selected: any) => {
-    setFormData(prev => ({ ...prev, attendees: selected ? selected.map((opt: any) => opt.value) : [] }));
+    setFormData(prev => ({ ...prev, attendees: selected || [] }));
     if (errors.attendees) {
       setErrors(prev => ({ ...prev, attendees: '' }));
     }
+  };
+
+  const addExternalEmail = () => {
+    if (!externalEmail.trim()) return;
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(externalEmail)) {
+      setErrors(prev => ({ ...prev, externalEmail: 'Please enter a valid email address' }));
+      return;
+    }
+
+    // Check if email already exists
+    const emailExists = formData.attendees.some(attendee => 
+      attendee.email === externalEmail || 
+      (attendee.type === 'external' && attendee.value === externalEmail)
+    );
+    
+    if (emailExists) {
+      setErrors(prev => ({ ...prev, externalEmail: 'This email is already added' }));
+      return;
+    }
+
+    const newAttendee: AttendeeOption = {
+      type: 'external',
+      value: externalEmail,
+      label: externalEmail,
+      email: externalEmail
+    };
+
+    setFormData(prev => ({ 
+      ...prev, 
+      attendees: [...prev.attendees, newAttendee] 
+    }));
+    setExternalEmail('');
+    if (errors.externalEmail) {
+      setErrors(prev => ({ ...prev, externalEmail: '' }));
+    }
+  };
+
+  const removeAttendee = (attendeeToRemove: AttendeeOption) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      attendees: prev.attendees.filter(attendee => attendee.value !== attendeeToRemove.value) 
+    }));
   };
 
   const getSelectedBoardroom = () => {
@@ -302,11 +362,75 @@ const BookingForm: React.FC = () => {
               <Select
                 isMulti
                 options={attendeeOptions}
-                value={attendeeOptions.filter(opt => formData.attendees.includes(opt.value))}
-                onChange={handleAttendeesChange}
+                value={formData.attendees.filter(attendee => attendee.type === 'user')}
+                onChange={(selected) => {
+                  const userAttendees = selected || [];
+                  const externalAttendees = formData.attendees.filter(attendee => attendee.type === 'external');
+                  setFormData(prev => ({ ...prev, attendees: [...userAttendees, ...externalAttendees] }));
+                }}
                 classNamePrefix="react-select"
-                placeholder="Select attendees..."
+                placeholder="Select registered users..."
               />
+              
+              {/* External Email Input */}
+              <div className="mt-3">
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={externalEmail}
+                    onChange={(e) => setExternalEmail(e.target.value)}
+                    placeholder="Add external email..."
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addExternalEmail();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={addExternalEmail}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Add
+                  </button>
+                </div>
+                {errors.externalEmail && (
+                  <p className="mt-1 text-sm text-red-600">{errors.externalEmail}</p>
+                )}
+              </div>
+              
+              {/* Selected Attendees Display */}
+              {formData.attendees.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Selected Attendees:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.attendees.map((attendee, index) => (
+                      <span
+                        key={`${attendee.type}-${attendee.value}-${index}`}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                          attendee.type === 'user' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        {attendee.type === 'external' && (
+                          <span className="mr-1">📧</span>
+                        )}
+                        {attendee.label}
+                        <button
+                          type="button"
+                          onClick={() => removeAttendee(attendee)}
+                          className="ml-2 text-red-500 hover:text-red-700"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               {errors.attendees && (
                 <p className="mt-1 text-sm text-red-600">{errors.attendees}</p>
               )}

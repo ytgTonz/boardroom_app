@@ -26,8 +26,21 @@ const bookingSchema = new mongoose.Schema({
   },
   attendees: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
+  }],
+  externalAttendees: [{
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true
+    },
+    name: {
+      type: String,
+      default: function() {
+        return this.email.split('@')[0];
+      }
+    }
   }],
   // attendees: { 
   //   type: Number, 

@@ -40,12 +40,19 @@ export interface Booking {
   createdAt: string;
 }
 
+export interface AttendeeOption {
+  type: 'user' | 'external';
+  value: string;
+  label: string;
+  email?: string;
+}
+
 export interface BookingFormData {
   boardroom: string;
   startTime: string;
   endTime: string;
   purpose: string;
-  attendees: string[];
+  attendees: AttendeeOption[];
   notes: string;
 }
 
