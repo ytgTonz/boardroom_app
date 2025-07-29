@@ -40,13 +40,13 @@ const AdminBookings: React.FC = () => {
   };
 
   const handleCancelBooking = async (bookingId: string) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) {
+    if (!confirm('Are you sure you want to cancel this booking as admin? All participants will be notified.')) {
       return;
     }
 
     try {
-      await bookingsAPI.cancel(bookingId);
-      alert('Booking cancelled successfully!');
+      await bookingsAPI.adminCancel(bookingId);
+      alert('Booking cancelled successfully by admin!');
       fetchBookings();
     } catch (error: any) {
       alert(error.message || 'Failed to cancel booking');
@@ -54,13 +54,13 @@ const AdminBookings: React.FC = () => {
   };
 
   const handleDeleteBooking = async (bookingId: string) => {
-    if (!confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to permanently delete this booking? This action cannot be undone and all participants will be notified.')) {
       return;
     }
 
     try {
-      await bookingsAPI.delete(bookingId);
-      alert('Booking deleted successfully!');
+      await bookingsAPI.adminDelete(bookingId);
+      alert('Booking deleted successfully by admin!');
       fetchBookings();
     } catch (error: any) {
       alert(error.message || 'Failed to delete booking');
