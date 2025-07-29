@@ -3,7 +3,9 @@ const {
   getUserBookings, 
   createBooking, 
   updateBooking,
-  cancelBooking, 
+  cancelBooking,
+  adminCancelBooking,
+  adminDeleteBooking, 
   getBoardroomAvailability,
   getAllBookings,
   optOutOfBooking // Import opt-out controller
