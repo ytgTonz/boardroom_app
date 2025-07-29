@@ -51,31 +51,49 @@ const AdminBookings: React.FC = () => {
     }
   };
 
-  const handleCancelBooking = async (bookingId: string) => {
-    if (!confirm('Are you sure you want to cancel this booking as admin? All participants will be notified.')) {
-      return;
-    }
+  const handleCancelBooking = (booking: Booking) => {
+    setConfirmModal({
+      isOpen: true,
+      type: 'cancel',
+      booking,
+      loading: false
+    });
+  };
+
+  const handleDeleteBooking = (booking: Booking) => {
+    setConfirmModal({
+      isOpen: true,
+      type: 'delete',
+      booking,
+      loading: false
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmModal.booking) return;
+
+    setConfirmModal(prev => ({ ...prev, loading: true }));
 
     try {
-      await bookingsAPI.adminCancel(bookingId);
-      alert('Booking cancelled successfully by admin!');
+      if (confirmModal.type === 'cancel') {
+        await bookingsAPI.adminCancel(confirmModal.booking._id);
+        alert('Booking cancelled successfully by admin!');
+      } else {
+        await bookingsAPI.adminDelete(confirmModal.booking._id);
+        alert('Booking deleted successfully by admin!');
+      }
+      
       fetchBookings();
+      setConfirmModal({ isOpen: false, type: 'cancel', booking: null, loading: false });
     } catch (error: any) {
-      alert(error.message || 'Failed to cancel booking');
+      alert(error.message || `Failed to ${confirmModal.type} booking`);
+      setConfirmModal(prev => ({ ...prev, loading: false }));
     }
   };
 
-  const handleDeleteBooking = async (bookingId: string) => {
-    if (!confirm('Are you sure you want to permanently delete this booking? This action cannot be undone and all participants will be notified.')) {
-      return;
-    }
-
-    try {
-      await bookingsAPI.adminDelete(bookingId);
-      alert('Booking deleted successfully by admin!');
-      fetchBookings();
-    } catch (error: any) {
-      alert(error.message || 'Failed to delete booking');
+  const handleCloseModal = () => {
+    if (!confirmModal.loading) {
+      setConfirmModal({ isOpen: false, type: 'cancel', booking: null, loading: false });
     }
   };
 
