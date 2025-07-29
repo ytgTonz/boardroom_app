@@ -628,6 +628,8 @@ module.exports = {
   createBooking,
   updateBooking,
   cancelBooking,
+  adminCancelBooking,
+  adminDeleteBooking,
   getBoardroomAvailability,
   getAllBookings,
   optOutOfBooking
