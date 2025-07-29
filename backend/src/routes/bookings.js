@@ -28,6 +28,8 @@ router.get('/availability/:id', getBoardroomAvailability);
 
 // Admin routes
 router.get('/all', authenticateToken, requireAdmin, getAllBookings);
+router.put('/admin/:id/cancel', authenticateToken, requireAdmin, adminCancelBooking);
+router.delete('/admin/:id', authenticateToken, requireAdmin, adminDeleteBooking);
 
 
 
