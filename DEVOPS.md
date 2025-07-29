@@ -30,7 +30,7 @@ Monitors file changes and auto-commits:
 ### 3. NPM Scripts
 - `npm run dev:watch` - Start file watcher only
 - `npm run dev:full` - Start development servers + file watcher
-- `npm run dev` - Start development servers only (existing)
+- `npm run dev` - Start development servers only
 
 ## 🚦 Usage
 
