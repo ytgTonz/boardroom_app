@@ -177,8 +177,18 @@ export const bookingsAPI = {
     return handleResponse(response);
   },
 
-  getCalendarBookings: async () => {
-    const response = await fetch(`${API_BASE_URL}/bookings/calendar`, {
+  getCalendarBookings: async (startDate?: string, endDate?: string) => {
+    let url = `${API_BASE_URL}/bookings/calendar`;
+    const params = new URLSearchParams();
+    
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
+    const response = await fetch(url, {
       headers: getAuthHeaders(),
     });
     return handleResponse(response);
