@@ -623,11 +623,71 @@ const updateBooking = async (req, res) => {
   }
 };
 
+// Smart delete function that handles both admin and user permissions
+const deleteBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const isAdmin = req.user.role === 'admin';
+    
+    // Find booking with population for notifications
+    const booking = await Booking.findById(id)
+      .populate('boardroom', 'name location')
+      .populate('attendees', 'name email')
+      .populate('user', 'name email');
+    
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    
+    // Check permissions: admin can delete any booking, users can only delete their own
+    if (!isAdmin && booking.user._id.toString() !== req.user.userId) {
+      return res.status(403).json({ 
+        message: 'You can only delete your own bookings' 
+      });
+    }
+    
+    // Create notifications for all attendees about deletion
+    const notificationPromises = booking.attendees.map(attendee => 
+      Notification.create({
+        user: attendee._id,
+        message: `Meeting "${booking.purpose}" in ${booking.boardroom.name} has been ${isAdmin ? 'deleted by admin' : 'deleted by organizer'}`,
+        booking: booking._id
+      })
+    );
+    
+    // Also notify the organizer if they're not in attendees and it's admin action
+    if (isAdmin && !booking.attendees.some(att => att._id.toString() === booking.user._id.toString())) {
+      notificationPromises.push(
+        Notification.create({
+          user: booking.user._id,
+          message: `Your meeting "${booking.purpose}" in ${booking.boardroom.name} has been deleted by admin`,
+          booking: booking._id
+        })
+      );
+    }
+    
+    await Promise.all(notificationPromises);
+    
+    // Delete the booking
+    await Booking.findByIdAndDelete(id);
+    
+    const message = isAdmin 
+      ? 'Booking deleted successfully by admin' 
+      : 'Booking deleted successfully';
+      
+    res.json({ message, booking });
+  } catch (error) {
+    console.error('Delete booking error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getUserBookings,
   createBooking,
   updateBooking,
   cancelBooking,
+  deleteBooking,
   adminCancelBooking,
   adminDeleteBooking,
   getBoardroomAvailability,
