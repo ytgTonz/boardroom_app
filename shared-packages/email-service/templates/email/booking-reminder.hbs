@@ -1,0 +1,59 @@
+<!-- backend/src/templates/email/booking-reminder.hbs -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Reminder</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #F59E0B; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
+        .meeting-details { background: white; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #F59E0B; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+        .urgent { background: #FEF3C7; color: #92400E; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; margin: 15px 0; }
+        .amenities { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .amenity { background: #FEF3C7; color: #92400E; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⏰ Meeting Reminder</h1>
+    </div>
+    
+    <div class="content">
+        <p>Hello <strong>{{user.name}}</strong>,</p>
+        
+        <div class="urgent">
+            Your meeting starts in 15 minutes!
+        </div>
+        
+        <div class="meeting-details">
+            <h3>{{booking.purpose}}</h3>
+            
+            <p><strong>📍 Location:</strong> {{booking.boardroom.name}} ({{booking.boardroom.location}})</p>
+            <p><strong>🕐 Time:</strong> {{formatDate booking.startTime}} - {{formatTime booking.endTime}}</p>
+            <p><strong>👥 Capacity:</strong> {{booking.boardroom.capacity}} people</p>
+            
+            {{#if booking.boardroom.amenities}}
+            <p><strong>🛠️ Available Amenities:</strong></p>
+            <div class="amenities">
+                {{#each booking.boardroom.amenities}}
+                <span class="amenity">{{this}}</span>
+                {{/each}}
+            </div>
+            {{/if}}
+            
+            {{#if booking.notes}}
+            <p><strong>📝 Notes:</strong> {{booking.notes}}</p>
+            {{/if}}
+        </div>
+        
+        <p><strong>💡 Reminder:</strong> Please arrive a few minutes early to set up any required equipment.</p>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated reminder from the Boardroom Booking System.</p>
+    </div>
+</body>
+</html>
