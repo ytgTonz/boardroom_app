@@ -12,6 +12,17 @@ const AdminBookings: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [bookingsPerPage] = useState(10);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    type: 'cancel' | 'delete';
+    booking: Booking | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    type: 'cancel',
+    booking: null,
+    loading: false
+  });
 
   useEffect(() => {
     fetchBookings();
