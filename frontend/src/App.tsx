@@ -10,6 +10,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import BookingForm from './components/BookingForm';
 import MyBookings from './components/MyBookings';
+import CalendarView from './components/CalendarView';
 import BoardroomList from './components/BoardroomList';
 import AdminBoardrooms from './components/AdminBoardrooms';
 import AdminUsers from './components/AdminUsers';
@@ -42,6 +43,7 @@ const AppContent = () => {
             <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
             <Route path="/book" element={user ? <BookingForm /> : <Navigate to="/login" />} />
             <Route path="/my-bookings" element={user ? <MyBookings /> : <Navigate to="/login" />} />
+            <Route path="/calendar" element={user ? <CalendarView /> : <Navigate to="/login" />} />
             <Route path="/boardrooms" element={<BoardroomList />} />
             <Route path="/admin" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
             <Route path="/admin/dashboard" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />

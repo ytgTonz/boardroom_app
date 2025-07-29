@@ -177,6 +177,13 @@ export const bookingsAPI = {
     return handleResponse(response);
   },
 
+  getCalendarBookings: async () => {
+    const response = await fetch(`${API_BASE_URL}/bookings/calendar`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
   create: async (bookingData: any) => {
     const response = await fetch(`${API_BASE_URL}/bookings`, {
       method: 'POST',
