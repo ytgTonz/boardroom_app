@@ -205,6 +205,117 @@ const cancelBooking = async (req, res) => {
   }
 };
 
+// Admin-only booking cancellation (can cancel any booking)
+const adminCancelBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findOne({ 
+      _id: req.params.id,
+      status: 'confirmed' 
+    }).populate('boardroom', 'name location')
+      .populate('attendees', 'name email')
+      .populate('user', 'name email');
+    
+    if (!booking) {
+      return res.status(404).json({ 
+        message: 'Booking not found' 
+      });
+    }
+    
+    // Update booking status
+    booking.status = 'cancelled';
+    await booking.save();
+    
+    // Create notifications for all attendees about admin cancellation
+    const notificationPromises = booking.attendees.map(attendee => 
+      Notification.create({
+        user: attendee._id,
+        message: `Meeting "${booking.purpose}" in ${booking.boardroom.name} has been cancelled by admin`,
+        booking: booking._id
+      })
+    );
+    
+    // Also notify the organizer if they're not in attendees
+    if (!booking.attendees.some(att => att._id.toString() === booking.user._id.toString())) {
+      notificationPromises.push(
+        Notification.create({
+          user: booking.user._id,
+          message: `Your meeting "${booking.purpose}" in ${booking.boardroom.name} has been cancelled by admin`,
+          booking: booking._id
+        })
+      );
+    }
+    
+    await Promise.all(notificationPromises);
+    
+    // Send cancellation emails
+    try {
+      const allRecipients = [...booking.attendees];
+      if (!booking.attendees.some(att => att._id.toString() === booking.user._id.toString())) {
+        allRecipients.push(booking.user);
+      }
+      
+      const cancellationPromises = allRecipients.map(user => 
+        emailService.sendBookingNotification(booking, user, booking.user, 'cancelled')
+      );
+      await Promise.all(cancellationPromises);
+      console.log('📧 Admin cancellation emails sent to all participants');
+    } catch (emailError) {
+      console.error('Admin cancellation email sending failed:', emailError);
+    }
+    
+    res.json({ message: 'Booking cancelled successfully by admin', booking });
+  } catch (error) {
+    console.error('Admin cancel booking error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Admin-only booking deletion (permanently delete any booking)
+const adminDeleteBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate('boardroom', 'name location')
+      .populate('attendees', 'name email')
+      .populate('user', 'name email');
+    
+    if (!booking) {
+      return res.status(404).json({ 
+        message: 'Booking not found' 
+      });
+    }
+    
+    // Create notifications for all attendees about admin deletion
+    const notificationPromises = booking.attendees.map(attendee => 
+      Notification.create({
+        user: attendee._id,
+        message: `Meeting "${booking.purpose}" in ${booking.boardroom.name} has been deleted by admin`,
+        booking: booking._id
+      })
+    );
+    
+    // Also notify the organizer if they're not in attendees
+    if (!booking.attendees.some(att => att._id.toString() === booking.user._id.toString())) {
+      notificationPromises.push(
+        Notification.create({
+          user: booking.user._id,
+          message: `Your meeting "${booking.purpose}" in ${booking.boardroom.name} has been deleted by admin`,
+          booking: booking._id
+        })
+      );
+    }
+    
+    await Promise.all(notificationPromises);
+    
+    // Delete the booking
+    await Booking.findByIdAndDelete(req.params.id);
+    
+    res.json({ message: 'Booking deleted successfully by admin', booking });
+  } catch (error) {
+    console.error('Admin delete booking error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const getBoardroomAvailability = async (req, res) => {
   try {
     const { date } = req.query;
