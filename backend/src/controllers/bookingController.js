@@ -236,11 +236,23 @@ const getAllBookings = async (req, res) => {
   try {
     console.log('getAllBookings called by user:', req.user.userId);
     
-    const { page = 1, limit = 1000, status, boardroom } = req.query;
+    const { page = 1, limit = 1000, status, boardroom, startDate, endDate } = req.query;
     
     const filter = {};
     if (status) filter.status = status;
     if (boardroom) filter.boardroom = boardroom;
+    
+    // Add date range filtering for calendar optimization
+    if (startDate && endDate) {
+      filter.$and = [
+        { startTime: { $lte: new Date(endDate) } },
+        { endTime: { $gte: new Date(startDate) } }
+      ];
+    } else if (startDate) {
+      filter.startTime = { $gte: new Date(startDate) };
+    } else if (endDate) {
+      filter.endTime = { $lte: new Date(endDate) };
+    }
     
     console.log('Filter:', filter);
     
