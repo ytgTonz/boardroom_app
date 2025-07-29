@@ -7,6 +7,8 @@
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
+    "dev:watch": "node dev-watcher.js",
+    "dev:full": "concurrently \"npm run dev\" \"npm run dev:watch\"",
     "build": "cd frontend && npm run build",
     "build:backend": "cd backend && npm install",
     "build:frontend": "cd frontend && npm install && npm run build",
@@ -15,6 +17,7 @@
     "deploy:prepare": "npm run build:backend && npm run build:frontend"
   },
   "devDependencies": {
+    "chokidar": "^3.6.0",
     "concurrently": "^8.2.0"
   },
   "keywords": [
