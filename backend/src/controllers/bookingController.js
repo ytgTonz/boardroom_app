@@ -285,16 +285,23 @@ const adminDeleteBooking = async (req, res) => {
     }
     
     // Create notifications for all attendees about admin deletion
-    const notificationPromises = booking.attendees.map(attendee => 
-      Notification.create({
-        user: attendee._id,
-        message: `Meeting "${booking.purpose}" in ${booking.boardroom.name} has been deleted by admin`,
-        booking: booking._id
-      })
-    );
+    const notificationPromises = [];
+    
+    if (booking.attendees && Array.isArray(booking.attendees)) {
+      booking.attendees.forEach(attendee => {
+        notificationPromises.push(
+          Notification.create({
+            user: attendee._id,
+            message: `Meeting "${booking.purpose}" in ${booking.boardroom.name} has been deleted by admin`,
+            booking: booking._id
+          })
+        );
+      });
+    }
     
     // Also notify the organizer if they're not in attendees
-    if (!booking.attendees.some(att => att._id.toString() === booking.user._id.toString())) {
+    const attendeeIds = booking.attendees ? booking.attendees.map(att => att._id.toString()) : [];
+    if (!attendeeIds.includes(booking.user._id.toString())) {
       notificationPromises.push(
         Notification.create({
           user: booking.user._id,
