@@ -256,8 +256,14 @@ const adminCancelBooking = async (req, res) => {
     
     // Send cancellation emails
     try {
-      const allRecipients = [...booking.attendees];
-      if (!booking.attendees.some(att => att._id.toString() === booking.user._id.toString())) {
+      const allRecipients = [];
+      
+      if (booking.attendees && Array.isArray(booking.attendees)) {
+        allRecipients.push(...booking.attendees);
+      }
+      
+      const attendeeIds = booking.attendees ? booking.attendees.map(att => att._id.toString()) : [];
+      if (!attendeeIds.includes(booking.user._id.toString())) {
         allRecipients.push(booking.user);
       }
       
