@@ -1,0 +1,16 @@
+{
+  "name": "@boardroom/email-service",
+  "version": "1.0.0",
+  "description": "Reusable email service with template support",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.0",
+    "handlebars": "^4.7.7"
+  },
+  "keywords": ["email", "templates", "notifications"],
+  "author": "Boardroom Team",
+  "license": "MIT"
+}
