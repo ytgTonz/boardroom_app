@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { bookingsAPI } from '../services/api';
 import { Booking } from '../types';
+import ConfirmationModal from './ConfirmationModal';
 
 const AdminBookings: React.FC = () => {
   console.log('AdminBookings component rendering...');
