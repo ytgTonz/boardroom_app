@@ -2,6 +2,11 @@
   "name": "boardroom-booking-app",
   "version": "1.0.0",
   "description": "A complete boardroom booking application with backend and frontend",
+  "workspaces": [
+    "shared-packages/*",
+    "backend",
+    "frontend"
+  ],
   "scripts": {
     "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
@@ -14,6 +19,7 @@
     "build:frontend": "cd frontend && npm install && npm run build",
     "start": "cd backend && npm start",
     "test": "cd backend && npm test",
+    "test:services": "npm run test --workspace=shared-packages/email-service && npm run test --workspace=shared-packages/auth-service && npm run test --workspace=shared-packages/notification-service",
     "deploy:prepare": "npm run build:backend && npm run build:frontend"
   },
   "devDependencies": {
