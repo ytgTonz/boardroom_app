@@ -1,0 +1,17 @@
+{
+  "name": "@boardroom/auth-service",
+  "version": "1.0.0",
+  "description": "Reusable authentication service with JWT and user management",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.0"
+  },
+  "keywords": ["auth", "jwt", "user", "authentication", "authorization"],
+  "author": "Boardroom Team",
+  "license": "MIT"
+}
