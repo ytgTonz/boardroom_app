@@ -354,14 +354,14 @@ const AdminBookings: React.FC = () => {
                     <div className="flex items-center justify-end space-x-2">
                       {booking.status !== 'cancelled' && (
                         <button
-                          onClick={() => handleCancelBooking(booking._id)}
+                          onClick={() => handleCancelBooking(booking)}
                           className="text-yellow-600 hover:text-yellow-900 px-2 py-1 rounded hover:bg-yellow-50"
                         >
                           Cancel
                         </button>
                       )}
                       <button
-                        onClick={() => handleDeleteBooking(booking._id)}
+                        onClick={() => handleDeleteBooking(booking)}
                         className="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50"
                       >
                         Delete
