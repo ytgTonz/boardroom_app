@@ -453,6 +453,22 @@ const AdminBookings: React.FC = () => {
           </p>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmAction}
+        title={confirmModal.type === 'cancel' ? 'Cancel Booking' : 'Delete Booking'}
+        message={
+          confirmModal.type === 'cancel'
+            ? `Are you sure you want to cancel "${confirmModal.booking?.purpose}" as admin? All participants will be notified of the cancellation.`
+            : `Are you sure you want to permanently delete "${confirmModal.booking?.purpose}"? This action cannot be undone and all participants will be notified.`
+        }
+        type={confirmModal.type === 'cancel' ? 'warning' : 'danger'}
+        confirmText={confirmModal.type === 'cancel' ? 'Cancel Booking' : 'Delete Booking'}
+        loading={confirmModal.loading}
+      />
     </div>
   );
 };
