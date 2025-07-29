@@ -245,6 +245,23 @@ export const bookingsAPI = {
     });
     return handleResponse(response);
   },
+
+  // Admin-only operations
+  adminCancel: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/bookings/admin/${id}/cancel`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  adminDelete: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/bookings/admin/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
 }; 
 
 // Users API
