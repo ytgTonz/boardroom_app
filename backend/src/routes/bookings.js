@@ -4,6 +4,7 @@ const {
   createBooking, 
   updateBooking,
   cancelBooking,
+  deleteBooking,
   adminCancelBooking,
   adminDeleteBooking, 
   getBoardroomAvailability,
