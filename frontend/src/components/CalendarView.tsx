@@ -4,6 +4,7 @@ import moment from 'moment';
 import { bookingsAPI } from '../services/api';
 import { Booking } from '../types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import BookingDetailsModal from './BookingDetailsModal';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const localizer = momentLocalizer(moment);
@@ -87,6 +88,8 @@ const CalendarView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState<View>('month');
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchBookings = useCallback(async (date: Date, view: View) => {
     setLoading(true);
@@ -161,6 +164,16 @@ const CalendarView: React.FC = () => {
     setCurrentView(view);
   };
 
+  const handleEventClick = (event: CalendarEvent) => {
+    setSelectedBooking(event.resource);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedBooking(null);
+  };
+
   const eventStyleGetter = (event: CalendarEvent) => {
     const booking = event.resource;
     let backgroundColor = '#3174ad';
@@ -229,6 +242,7 @@ const CalendarView: React.FC = () => {
             date={currentDate}
             onView={handleViewChange}
             onNavigate={setCurrentDate}
+            onSelectEvent={handleEventClick}
             popup
             showMultiDayTimes
             step={30}
@@ -259,6 +273,13 @@ const CalendarView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Booking Details Modal */}
+      <BookingDetailsModal
+        booking={selectedBooking}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };
