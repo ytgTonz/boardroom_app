@@ -210,6 +210,13 @@ const CalendarView: React.FC = () => {
       </div>
 
       <div className="card">
+        <CustomToolbar
+          date={currentDate}
+          view={currentView}
+          views={['month', 'week', 'day']}
+          onView={handleViewChange}
+          onNavigate={handleNavigate}
+        />
         <div className="h-96 md:h-[600px]">
           <Calendar
             localizer={localizer}
@@ -218,12 +225,18 @@ const CalendarView: React.FC = () => {
             endAccessor="end"
             eventPropGetter={eventStyleGetter}
             views={['month', 'week', 'day']}
-            defaultView="month"
+            view={currentView}
+            date={currentDate}
+            onView={handleViewChange}
+            onNavigate={setCurrentDate}
             popup
             showMultiDayTimes
             step={30}
             timeslots={2}
             className="text-xs md:text-sm"
+            components={{
+              toolbar: () => null, // Hide default toolbar since we have custom one
+            }}
           />
         </div>
       </div>
