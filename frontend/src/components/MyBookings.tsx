@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import EditBookingForm from './EditBookingForm';
 
 const MyBookings: React.FC = () => {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
