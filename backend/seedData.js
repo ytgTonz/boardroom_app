@@ -266,5 +266,8 @@ async function seedData() {
   }
 }
 
-// Run the seeding
-seedData(); 
+// DISABLED FOR PRODUCTION - Run the seeding
+// seedData();
+
+// Uncomment the line below to run seeding when needed for development:
+// seedData(); 

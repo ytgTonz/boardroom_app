@@ -19,11 +19,18 @@ const EditBookingForm: React.FC<EditBookingFormProps> = ({ booking, onCancel, on
   const [submitting, setSubmitting] = useState(false);
   const [externalEmail, setExternalEmail] = useState('');
 
+  // Helper function to convert UTC date to local datetime-local format
+  const toLocalDateTimeString = (utcDateString: string) => {
+    const date = new Date(utcDateString);
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return localDate.toISOString().slice(0, 16);
+  };
+
   // Initialize form data from existing booking
   const [formData, setFormData] = useState<BookingFormData>({
     boardroom: booking.boardroom._id,
-    startTime: new Date(booking.startTime).toISOString().slice(0, 16),
-    endTime: new Date(booking.endTime).toISOString().slice(0, 16),
+    startTime: toLocalDateTimeString(booking.startTime),
+    endTime: toLocalDateTimeString(booking.endTime),
     purpose: booking.purpose,
     attendees: booking.attendees.map(user => ({
       type: 'user' as const,
