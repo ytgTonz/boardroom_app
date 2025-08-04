@@ -78,9 +78,9 @@ const BoardroomList: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="card">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Available Boardrooms</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Boardroom</h1>
         <p className="text-gray-600">
-          Browse and book from our selection of professional meeting spaces.
+          Our professional meeting space available for booking.
         </p>
       </div>
 
