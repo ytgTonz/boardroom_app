@@ -8,10 +8,7 @@ import EditBookingForm from './EditBookingForm';
 const MyBookings: React.FC = () => {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
 
   const { user } = useAuth();
