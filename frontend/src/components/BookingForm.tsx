@@ -83,6 +83,14 @@ const BookingForm: React.FC = () => {
     return newDate.toISOString().slice(0, 16);
   };
 
+  const isMinimumBookingTime = (startTime: string, endTime: string) => {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+    return diffHours >= 1;
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
