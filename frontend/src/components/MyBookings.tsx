@@ -207,7 +207,7 @@ const MyBookings: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredBookings.map((booking) => (
+            {bookings.map((booking) => (
               <div key={booking._id} className={`border rounded-lg p-6 transition-all duration-300 ${
                 isBookingRecentlyModified(booking) 
                   ? 'border-orange-300 bg-orange-50 shadow-md ring-2 ring-orange-200' 
