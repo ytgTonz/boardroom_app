@@ -13,8 +13,12 @@ const BoardroomList: React.FC = () => {
     const fetchBoardrooms = async () => {
       try {
         const data = await boardroomsAPI.getAll();
-        setBoardrooms(data);
-        setFilteredBoardrooms(data);
+        setBoardrooms(data.filter(room => 
+          !searchTerm || 
+          room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          room.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          room.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        ));
       } catch (error) {
         console.error('Error fetching boardrooms:', error);
       } finally {
@@ -23,35 +27,7 @@ const BoardroomList: React.FC = () => {
     };
 
     fetchBoardrooms();
-  }, []);
-
-  useEffect(() => {
-    let filtered = boardrooms;
-
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(room =>
-        room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        room.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        room.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Apply capacity filter
-    if (capacityFilter) {
-      const capacity = parseInt(capacityFilter);
-      filtered = filtered.filter(room => room.capacity >= capacity);
-    }
-
-    // Apply location filter
-    if (locationFilter) {
-      filtered = filtered.filter(room =>
-        room.location.toLowerCase().includes(locationFilter.toLowerCase())
-      );
-    }
-
-    setFilteredBoardrooms(filtered);
-  }, [boardrooms, searchTerm, capacityFilter, locationFilter]);
+  }, [searchTerm]);
 
   const getCapacityColor = (capacity: number) => {
     if (capacity >= 15) return 'bg-red-100 text-red-800';
