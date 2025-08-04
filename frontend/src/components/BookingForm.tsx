@@ -63,6 +63,26 @@ const BookingForm: React.FC = () => {
     return today.toISOString().slice(0, 16);
   };
 
+  // Check if time is within working hours (07:00 - 16:00)
+  const isWithinWorkingHours = (timeString: string) => {
+    if (!timeString) return false;
+    const time = new Date(timeString);
+    const hours = time.getHours();
+    return hours >= 7 && hours < 16;
+  };
+
+  // Get next available working hour
+  const getNextWorkingHour = (date: Date) => {
+    const newDate = new Date(date);
+    if (newDate.getHours() < 7) {
+      newDate.setHours(7, 0, 0, 0);
+    } else if (newDate.getHours() >= 16) {
+      newDate.setDate(newDate.getDate() + 1);
+      newDate.setHours(7, 0, 0, 0);
+    }
+    return newDate.toISOString().slice(0, 16);
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
