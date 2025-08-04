@@ -7,6 +7,7 @@ import Select from 'react-select';
 
 const BookingForm: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [boardrooms, setBoardrooms] = useState<Boardroom[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
