@@ -22,8 +22,14 @@ const EditBookingForm: React.FC<EditBookingFormProps> = ({ booking, onCancel, on
   // Helper function to convert UTC date to local datetime-local format
   const toLocalDateTimeString = (utcDateString: string) => {
     const date = new Date(utcDateString);
-    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return localDate.toISOString().slice(0, 16);
+    // Get local time offset and adjust for it
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
   // Initialize form data from existing booking
@@ -109,7 +115,27 @@ const EditBookingForm: React.FC<EditBookingFormProps> = ({ booking, onCancel, on
 
     setSubmitting(true);
     try {
-      const updatedBooking = await bookingsAPI.update(booking._id, formData);
+      // Convert datetime-local to ISO string for backend
+      const startTimeISO = new Date(formData.startTime).toISOString();
+      const endTimeISO = new Date(formData.endTime).toISOString();
+      
+      console.log('Edit form sending times:', { 
+        original: { start: formData.startTime, end: formData.endTime },
+        iso: { start: startTimeISO, end: endTimeISO }
+      });
+      
+      // Transform attendees data for backend
+      const updateData = {
+        ...formData,
+        startTime: startTimeISO,
+        endTime: endTimeISO,
+        attendees: {
+          users: formData.attendees.filter(a => a.type === 'user').map(a => a.value),
+          external: formData.attendees.filter(a => a.type === 'external').map(a => a.email!)
+        }
+      };
+      
+      const updatedBooking = await bookingsAPI.update(booking._id, updateData);
       toast.success('Booking updated successfully!');
       onUpdate(updatedBooking);
     } catch (error: any) {

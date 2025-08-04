@@ -1,0 +1,6 @@
+# Handle client-side routing for React SPA
+# API calls should not be redirected
+/api/*  https://boardroom-booking-api.onrender.com/api/:splat  200
+
+# All other routes should serve the index.html file for client-side routing
+/*    /index.html   200

@@ -44,8 +44,9 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Boardroom not found or inactive' });
     }
     
-    // Validate time is in future
-    if (new Date(startTime) <= new Date()) {
+    // Validate time is in future (convert to UTC for comparison)
+    const startTimeUTCForValidation = new Date(startTime);
+    if (startTimeUTCForValidation <= new Date()) {
       return res.status(400).json({ message: 'Start time must be in the future' });
     }
     
@@ -77,17 +78,23 @@ const createBooking = async (req, res) => {
       ? userAttendees 
       : [...userAttendees, req.user.userId];
     
+    // Convert times to UTC to ensure consistent storage
+    const startTimeUTC = new Date(startTime);
+    const endTimeUTC = new Date(endTime);
+    
+    console.log("Original start time:", startTime);
+    console.log("Converted to UTC:", startTimeUTC.toISOString());
+    
     const booking = new Booking({
       user: req.user.userId,
       boardroom,
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
+      startTime: startTimeUTC,
+      endTime: endTimeUTC,
       purpose,
       attendees: allUserAttendees,
       externalAttendees: externalAttendees,
       notes: notes || ''
     });
-    console.log("start time saved", startTime)
     
     await booking.save();
     
@@ -132,7 +139,7 @@ const createBooking = async (req, res) => {
             <p><strong>Meeting:</strong> ${purpose}</p>
             <p><strong>Organizer:</strong> ${organizer.name} (${organizer.email})</p>
             <p><strong>Room:</strong> ${boardroomExists.name} - ${boardroomExists.location}</p>
-            <p><strong>Time:</strong> ${new Date(startTime).toLocaleString()} - ${new Date(endTime).toLocaleString()}</p>
+            <p><strong>Time:</strong> ${new Date(startTime).toLocaleString('en-US', { timeZoneName: 'short' })} - ${new Date(endTime).toLocaleString('en-US', { timeZoneName: 'short' })}</p>
             ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
             <p>Please contact the organizer if you have any questions.</p>
           `
@@ -462,7 +469,7 @@ const optOutOfBooking = async (req, res) => {
         
         Meeting: ${booking.purpose}
         Room: ${booking.boardroom.name}
-        Time: ${new Date(booking.startTime).toLocaleString()}
+        Time: ${new Date(booking.startTime).toLocaleString('en-US', { timeZoneName: 'short' })}
         
         Please plan accordingly.
         
@@ -565,10 +572,16 @@ const updateBooking = async (req, res) => {
     const oldAttendees = existingBooking.attendees;
     const oldExternalAttendees = existingBooking.externalAttendees || [];
 
-    // Update booking
+    // Update booking with proper timezone handling
     if (boardroom) existingBooking.boardroom = boardroom;
-    if (startTime) existingBooking.startTime = new Date(startTime);
-    if (endTime) existingBooking.endTime = new Date(endTime);
+    if (startTime) {
+      existingBooking.startTime = new Date(startTime);
+      console.log("Updated start time:", startTime, "->", existingBooking.startTime.toISOString());
+    }
+    if (endTime) {
+      existingBooking.endTime = new Date(endTime);
+      console.log("Updated end time:", endTime, "->", existingBooking.endTime.toISOString());
+    }
     if (purpose) existingBooking.purpose = purpose;
     if (attendees !== undefined) {
       existingBooking.attendees = allUserAttendees;
@@ -626,7 +639,7 @@ const updateBooking = async (req, res) => {
               <p><strong>Meeting:</strong> ${updatedBooking.purpose}</p>
               <p><strong>Organizer:</strong> ${organizer.name} (${organizer.email})</p>
               <p><strong>Room:</strong> ${updatedBooking.boardroom.name} - ${updatedBooking.boardroom.location}</p>
-              <p><strong>Time:</strong> ${new Date(updatedBooking.startTime).toLocaleString()} - ${new Date(updatedBooking.endTime).toLocaleString()}</p>
+              <p><strong>Time:</strong> ${new Date(updatedBooking.startTime).toLocaleString('en-US', { timeZoneName: 'short' })} - ${new Date(updatedBooking.endTime).toLocaleString('en-US', { timeZoneName: 'short' })}</p>
               ${updatedBooking.notes ? `<p><strong>Notes:</strong> ${updatedBooking.notes}</p>` : ''}
               <p>The meeting details have been updated. Please check your calendar.</p>
             `

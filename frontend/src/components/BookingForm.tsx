@@ -110,9 +110,22 @@ const BookingForm: React.FC = () => {
     }
     setSubmitting(true);
     try {
+      // Convert datetime-local to ISO string for backend
+      // datetime-local gives us YYYY-MM-DDTHH:mm format in user's local timezone
+      // We need to send it as ISO string so backend can handle timezone properly
+      const startTimeISO = new Date(formData.startTime).toISOString();
+      const endTimeISO = new Date(formData.endTime).toISOString();
+      
+      console.log('Frontend sending times:', { 
+        original: { start: formData.startTime, end: formData.endTime },
+        iso: { start: startTimeISO, end: endTimeISO }
+      });
+      
       // Transform attendees data for backend
       const bookingData = {
         ...formData,
+        startTime: startTimeISO,
+        endTime: endTimeISO,
         attendees: {
           users: formData.attendees.filter(a => a.type === 'user').map(a => a.value),
           external: formData.attendees.filter(a => a.type === 'external').map(a => a.email!)

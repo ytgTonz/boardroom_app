@@ -187,7 +187,7 @@ ${type === 'created' ? 'You have been invited to a meeting:' : 'The following me
 
 Meeting: ${booking.purpose}
 Room: ${booking.boardroom.name} (${booking.boardroom.location})
-Time: ${new Date(booking.startTime).toLocaleString()} - ${new Date(booking.endTime).toLocaleString()}
+Time: ${new Date(booking.startTime).toLocaleString('en-US', { timeZoneName: 'short' })} - ${new Date(booking.endTime).toLocaleString('en-US', { timeZoneName: 'short' })}
 
 ${booking.notes ? `Notes: ${booking.notes}` : ''}
 

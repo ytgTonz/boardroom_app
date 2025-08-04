@@ -23,20 +23,23 @@ handlebars.registerHelper('formatTime', function(dateString) {
   return date.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
-    hour12: true
+    hour12: true,
+    timeZoneName: 'short'
   });
 });
 
 handlebars.registerHelper('formatDateTime', function(dateString) {
   const date = new Date(dateString);
-  return date.toLocaleString('en-US', {
+  const formatted = date.toLocaleString('en-US', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    hour12: true
+    hour12: true,
+    timeZoneName: 'short'
   });
+  return formatted;
 });
 
 handlebars.registerHelper('eq', function(a, b) {
