@@ -156,6 +156,16 @@ const createBooking = async (req, res) => {
       // Don't fail the booking creation if email fails
     }
     
+    // Emit Socket.IO event for real-time updates
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('booking-created', {
+        booking: populatedBooking,
+        boardroomId: boardroom
+      });
+      console.log('🔌 Socket.IO: booking-created event emitted');
+    }
+    
     res.status(201).json(populatedBooking);
   } catch (error) {
     console.error('Create booking error:', error);
@@ -204,6 +214,16 @@ const cancelBooking = async (req, res) => {
       console.log('📧 Cancellation emails sent to attendees');
     } catch (emailError) {
       console.error('Cancellation email sending failed:', emailError);
+    }
+    
+    // Emit Socket.IO event for real-time updates
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('booking-cancelled', {
+        booking,
+        boardroomId: booking.boardroom._id
+      });
+      console.log('🔌 Socket.IO: booking-cancelled event emitted');
     }
     
     res.json({ message: 'Booking cancelled successfully', booking });
@@ -285,6 +305,17 @@ const adminCancelBooking = async (req, res) => {
       console.error('Admin cancellation email sending failed:', emailError);
     }
     
+    // Emit Socket.IO event for real-time updates
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('booking-cancelled', {
+        booking,
+        boardroomId: booking.boardroom._id,
+        cancelledBy: 'admin'
+      });
+      console.log('🔌 Socket.IO: booking-cancelled event emitted (admin)');
+    }
+    
     res.json({ message: 'Booking cancelled successfully by admin', booking });
   } catch (error) {
     console.error('Admin cancel booking error:', error);
@@ -337,6 +368,17 @@ const adminDeleteBooking = async (req, res) => {
     
     // Delete the booking
     await Booking.findByIdAndDelete(req.params.id);
+    
+    // Emit Socket.IO event for real-time updates
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('booking-deleted', {
+        booking,
+        boardroomId: booking.boardroom._id,
+        deletedBy: 'admin'
+      });
+      console.log('🔌 Socket.IO: booking-deleted event emitted (admin)');
+    }
     
     res.json({ message: 'Booking deleted successfully by admin', booking });
   } catch (error) {
@@ -655,6 +697,21 @@ const updateBooking = async (req, res) => {
         console.error('Update email sending failed:', emailError);
         // Don't fail the update if email fails
       }
+      
+      // Emit Socket.IO event for real-time updates
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('booking-updated', {
+          booking: updatedBooking,
+          boardroomId: finalBoardroom,
+          changes: {
+            boardroomChanged,
+            timeChanged,
+            attendeesChanged
+          }
+        });
+        console.log('🔌 Socket.IO: booking-updated event emitted');
+      }
     }
 
     res.json(updatedBooking);
@@ -718,6 +775,17 @@ const deleteBooking = async (req, res) => {
     
     // Delete the booking
     await Booking.findByIdAndDelete(id);
+    
+    // Emit Socket.IO event for real-time updates
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('booking-deleted', {
+        booking,
+        boardroomId: booking.boardroom._id,
+        deletedBy: isAdmin ? 'admin' : 'user'
+      });
+      console.log('🔌 Socket.IO: booking-deleted event emitted');
+    }
     
     const message = isAdmin 
       ? 'Booking deleted successfully by admin' 

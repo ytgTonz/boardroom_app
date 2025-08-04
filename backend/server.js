@@ -1,5 +1,7 @@
 // backend/server.js (UPDATED WITH EMAIL)
 const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -18,6 +20,7 @@ const notificationRoutes = require('./src/routes/notifications');
 const userRoutes = require('./src/routes/users');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
 // Security middleware
@@ -37,6 +40,37 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
+
+// Socket.IO configuration with CORS
+const io = socketIo(server, {
+  cors: {
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
+
+// Socket.IO event handlers
+io.on('connection', (socket) => {
+  console.log(`🔌 User connected: ${socket.id}`);
+
+  socket.on('join-room', (room) => {
+    socket.join(room);
+    console.log(`👤 User ${socket.id} joined room: ${room}`);
+  });
+
+  socket.on('leave-room', (room) => {
+    socket.leave(room);
+    console.log(`👤 User ${socket.id} left room: ${room}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`🔌 User disconnected: ${socket.id}`);
+  });
+});
+
+// Make io available to routes
+app.set('io', io);
 
 // Middleware
 app.use(express.json());
@@ -139,9 +173,10 @@ app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
   console.log(`📧 Email service: ${process.env.EMAIL_USER ? 'Configured' : 'Using test mode'}`);
+  console.log(`🔌 Socket.IO enabled for real-time updates`);
 });

@@ -4,10 +4,17 @@ import { useAuth } from '../contexts/AuthContext';
 import { bookingsAPI, boardroomsAPI } from '../services/api';
 import { Booking, Boardroom } from '../types';
 import MiniCalendar from './MiniCalendar';
+import { useSocket } from '../hooks/useSocket';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  
+  // Initialize Socket.IO connection
+  const { isConnected } = useSocket({
+    autoConnect: true,
+    rooms: ['dashboard']
+  });
   const [stats, setStats] = useState({
     totalBookings: 0,
     upcomingBookings: 0,
@@ -94,12 +101,28 @@ const Dashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="card">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome back, {user?.name}!
-        </h1>
-        <p className="text-gray-600">
-          Here's what's happening with your boardroom bookings today.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Welcome back, {user?.name}!
+            </h1>
+            <p className="text-gray-600">
+              Here's what's happening with your boardroom bookings today.
+            </p>
+          </div>
+          
+          {/* Real-time connection status */}
+          <div className="flex items-center space-x-2">
+            <div className={`w-3 h-3 rounded-full ${
+              isConnected ? 'bg-green-500' : 'bg-red-500'
+            }`}></div>
+            <span className={`text-sm ${
+              isConnected ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {isConnected ? 'Live Updates' : 'Offline'}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Statistics Cards */}
