@@ -19,7 +19,6 @@ const MyBookings: React.FC = () => {
       try {
         const data = await bookingsAPI.getMyBookings();
         setBookings(data);
-        setFilteredBookings(data);
       } catch (error) {
         console.error('Error fetching bookings:', error);
       } finally {
@@ -28,53 +27,6 @@ const MyBookings: React.FC = () => {
     };
     fetchBookings();
   }, [user]);
-
-  useEffect(() => {
-    let filtered = bookings;
-
-    // Apply status filter
-    if (statusFilter) {
-      filtered = filtered.filter(booking => booking.status === statusFilter);
-    }
-
-    // Apply date filter
-    if (dateFilter) {
-      const today = new Date();
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const nextWeek = new Date(today);
-      nextWeek.setDate(nextWeek.getDate() + 7);
-
-      switch (dateFilter) {
-        case 'today':
-          filtered = filtered.filter(booking => {
-            const bookingDate = new Date(booking.startTime);
-            return bookingDate.toDateString() === today.toDateString();
-          });
-          break;
-        case 'tomorrow':
-          filtered = filtered.filter(booking => {
-            const bookingDate = new Date(booking.startTime);
-            return bookingDate.toDateString() === tomorrow.toDateString();
-          });
-          break;
-        case 'this-week':
-          filtered = filtered.filter(booking => {
-            const bookingDate = new Date(booking.startTime);
-            return bookingDate >= today && bookingDate <= nextWeek;
-          });
-          break;
-        case 'past':
-          filtered = filtered.filter(booking => {
-            const bookingDate = new Date(booking.startTime);
-            return bookingDate < today;
-          });
-          break;
-      }
-    }
-
-    setFilteredBookings(filtered);
-  }, [bookings, statusFilter, dateFilter]);
 
   // Fixed cancel booking function to use the correct API method
   const handleCancelBooking = async (bookingId: string) => {
