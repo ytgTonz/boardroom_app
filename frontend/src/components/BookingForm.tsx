@@ -87,8 +87,8 @@ const BookingForm: React.FC = () => {
     const start = new Date(startTime);
     const end = new Date(endTime);
     const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
-    return diffHours >= 1;
+    const diffMinutes = Math.ceil(diffTime / (1000 * 60));
+    return diffMinutes >= 30;
   };
 
   const validateForm = () => {
@@ -135,6 +135,10 @@ const BookingForm: React.FC = () => {
 
     if (!formData.purpose.trim()) {
       newErrors.purpose = 'Please enter a purpose for the meeting';
+    }
+
+    if (!isMinimumBookingTime(formData.startTime, formData.endTime)) {
+      newErrors.endTime = 'Booking must be at least 1 hour long';
     }
 
     // Attendees are now optional - no validation required
