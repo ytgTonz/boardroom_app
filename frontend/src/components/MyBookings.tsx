@@ -139,7 +139,6 @@ const MyBookings: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -156,14 +155,14 @@ const MyBookings: React.FC = () => {
     return bookingTime > now && bookingTime <= oneHourFromNow;
   };
 
-  // Helper function to check if booking was recently modified (within last 10 minutes)
+  // Helper function to check if booking was recently modified (within last 10 seconds)
   const isBookingRecentlyModified = (booking: Booking) => {
     if (!booking.modifiedAt) return false;
     const now = new Date();
     const modifiedTime = new Date(booking.modifiedAt);
     const timeDiff = now.getTime() - modifiedTime.getTime();
-    const tenMinutesInMs = 10 * 60 * 1000; // 10 minutes
-    return timeDiff <= tenMinutesInMs && booking.modifiedAt !== booking.createdAt;
+    const tenSecondsInMs = 10 * 1000; // 10 seconds
+    return timeDiff <= tenSecondsInMs && booking.modifiedAt !== booking.createdAt;
   };
 
   // Helper functions to determine user's relationship to booking

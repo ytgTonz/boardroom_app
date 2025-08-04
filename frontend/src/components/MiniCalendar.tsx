@@ -138,7 +138,6 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateClick, className = ''
           const bookings = getBookingsForDate(date);
           const hasBookings = bookings.length > 0;
           const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length;
-          const pendingBookings = bookings.filter(b => b.status === 'pending').length;
           
           return (
             <div
@@ -160,9 +159,6 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateClick, className = ''
                       {confirmedBookings > 0 && (
                         <div className="w-1 h-1 bg-green-500 rounded-full"></div>
                       )}
-                      {pendingBookings > 0 && (
-                        <div className="w-1 h-1 bg-yellow-500 rounded-full"></div>
-                      )}
                       {bookings.some(b => b.status === 'cancelled') && (
                         <div className="w-1 h-1 bg-red-500 rounded-full"></div>
                       )}
@@ -182,10 +178,6 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateClick, className = ''
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span>Confirmed</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <span>Pending</span>
             </div>
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>

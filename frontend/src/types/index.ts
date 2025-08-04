@@ -35,7 +35,7 @@ export interface Booking {
   endTime: string;
   purpose: string;
   attendees: User[];
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'confirmed' | 'cancelled';
   notes?: string;
   createdAt: string;
   modifiedAt: string;

@@ -116,8 +116,6 @@ const AdminBookings: React.FC = () => {
     switch (status) {
       case 'confirmed':
         return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -128,10 +126,9 @@ const AdminBookings: React.FC = () => {
   const getBookingStats = () => {
     const total = bookings.length;
     const confirmed = bookings.filter(b => b.status === 'confirmed').length;
-    const pending = bookings.filter(b => b.status === 'pending').length;
     const cancelled = bookings.filter(b => b.status === 'cancelled').length;
     
-    return { total, confirmed, pending, cancelled };
+    return { total, confirmed, cancelled };
   };
 
   // Filter and search bookings
@@ -204,7 +201,7 @@ const AdminBookings: React.FC = () => {
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="p-6 bg-white rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-blue-100 text-blue-600">
@@ -229,20 +226,6 @@ const AdminBookings: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Confirmed</p>
               <p className="text-2xl font-bold text-gray-900">{stats.confirmed}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 bg-white rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
             </div>
           </div>
         </div>
@@ -282,7 +265,6 @@ const AdminBookings: React.FC = () => {
             >
               <option value="all">All Status</option>
               <option value="confirmed">Confirmed</option>
-              <option value="pending">Pending</option>
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
