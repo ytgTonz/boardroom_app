@@ -6,11 +6,8 @@ import { Boardroom } from '../types';
 const BoardroomList: React.FC = () => {
   const navigate = useNavigate();
   const [boardrooms, setBoardrooms] = useState<Boardroom[]>([]);
-  const [filteredBoardrooms, setFilteredBoardrooms] = useState<Boardroom[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [capacityFilter, setCapacityFilter] = useState('');
-  const [locationFilter, setLocationFilter] = useState('');
 
   useEffect(() => {
     const fetchBoardrooms = async () => {
