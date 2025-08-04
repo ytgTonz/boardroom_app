@@ -6,6 +6,7 @@ import { Boardroom } from '../types';
 const BoardroomList: React.FC = () => {
   const navigate = useNavigate();
   const [boardrooms, setBoardrooms] = useState<Boardroom[]>([]);
+  const [filteredBoardrooms, setFilteredBoardrooms] = useState<Boardroom[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -13,12 +14,8 @@ const BoardroomList: React.FC = () => {
     const fetchBoardrooms = async () => {
       try {
         const data = await boardroomsAPI.getAll();
-        setBoardrooms(data.filter(room => 
-          !searchTerm || 
-          room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          room.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          room.description?.toLowerCase().includes(searchTerm.toLowerCase())
-        ));
+        setBoardrooms(data);
+        setFilteredBoardrooms(data);
       } catch (error) {
         console.error('Error fetching boardrooms:', error);
       } finally {
@@ -27,7 +24,22 @@ const BoardroomList: React.FC = () => {
     };
 
     fetchBoardrooms();
-  }, [searchTerm]);
+  }, []);
+
+  useEffect(() => {
+    let filtered = boardrooms;
+
+    // Apply search filter only
+    if (searchTerm) {
+      filtered = filtered.filter(room =>
+        room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        room.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        room.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    setFilteredBoardrooms(filtered);
+  }, [boardrooms, searchTerm]);
 
   const getCapacityColor = (capacity: number) => {
     if (capacity >= 15) return 'bg-red-100 text-red-800';
