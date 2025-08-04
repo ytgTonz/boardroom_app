@@ -135,17 +135,8 @@ const BookingForm: React.FC = () => {
       await bookingsAPI.create(bookingData);
       toast.success('Booking created successfully!');
       
-      // Reset form
-      setFormData({
-        boardroom: '',
-        startTime: '',
-        endTime: '',
-        purpose: '',
-        attendees: [],
-        notes: ''
-      });
-      setExternalEmail('');
-      setSelectedBoardroom('');
+      // Redirect to My Bookings page
+      navigate('/my-bookings');
     } catch (error: any) {
       toast.error(error.message || 'Failed to create booking');
     } finally {
