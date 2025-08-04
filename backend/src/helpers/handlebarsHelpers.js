@@ -1,6 +1,12 @@
 // backend/src/helpers/handlebarsHelpers.js
 const handlebars = require('handlebars');
 
+// Configure global Handlebars runtime options to allow property access for Mongoose objects
+handlebars.defaultOptions = {
+  allowProtoPropertiesByDefault: true,
+  allowProtoMethodsByDefault: true
+};
+
 // Register custom helpers for email templates
 handlebars.registerHelper('formatDate', function(dateString) {
   const date = new Date(dateString);

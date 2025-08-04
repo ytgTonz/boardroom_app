@@ -72,7 +72,14 @@ class EmailService {
     if (!template) {
       throw new Error(`Template ${templateName} not found`);
     }
-    return template(context);
+    
+    // Configure runtime options to allow access to populated Mongoose properties
+    const runtimeOptions = {
+      allowProtoPropertiesByDefault: true,
+      allowProtoMethodsByDefault: true
+    };
+    
+    return template(context, runtimeOptions);
   }
 
   async initializeTransporter() {
