@@ -156,6 +156,16 @@ const MyBookings: React.FC = () => {
     return bookingTime > now && bookingTime <= oneHourFromNow;
   };
 
+  // Helper function to check if booking was recently modified (within last 10 minutes)
+  const isBookingRecentlyModified = (booking: Booking) => {
+    if (!booking.modifiedAt) return false;
+    const now = new Date();
+    const modifiedTime = new Date(booking.modifiedAt);
+    const timeDiff = now.getTime() - modifiedTime.getTime();
+    const tenMinutesInMs = 10 * 60 * 1000; // 10 minutes
+    return timeDiff <= tenMinutesInMs && booking.modifiedAt !== booking.createdAt;
+  };
+
   // Helper functions to determine user's relationship to booking
   const isUserCreator = (booking: Booking) => {
     let truthi = booking.user._id === user?._id;
@@ -274,7 +284,11 @@ const MyBookings: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {filteredBookings.map((booking) => (
-              <div key={booking._id} className="border border-gray-200 rounded-lg p-6">
+              <div key={booking._id} className={`border rounded-lg p-6 transition-all duration-300 ${
+                isBookingRecentlyModified(booking) 
+                  ? 'border-orange-300 bg-orange-50 shadow-md ring-2 ring-orange-200' 
+                  : 'border-gray-200'
+              }`}>
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
@@ -298,6 +312,18 @@ const MyBookings: React.FC = () => {
                       {isUserCreator(booking) && (
                         <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
                           Created by you
+                        </span>
+                      )}
+                      {/* Show "Added by" tag when user is attendee but not creator */}
+                      {isUserAttendee(booking) && !isUserCreator(booking) && (
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                          Added by {booking.user.name}
+                        </span>
+                      )}
+                      {/* Show "Recently Modified" tag for modified bookings */}
+                      {isBookingRecentlyModified(booking) && (
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800 animate-pulse">
+                          Recently Modified
                         </span>
                       )}
                     </div>

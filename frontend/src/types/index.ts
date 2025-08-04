@@ -38,6 +38,7 @@ export interface Booking {
   status: 'pending' | 'confirmed' | 'cancelled';
   notes?: string;
   createdAt: string;
+  modifiedAt: string;
 }
 
 export interface AttendeeOption {

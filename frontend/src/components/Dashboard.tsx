@@ -58,6 +58,16 @@ const Dashboard: React.FC = () => {
     });
   };
 
+  // Helper function to check if booking was recently modified (within last 10 minutes)
+  const isBookingRecentlyModified = (booking: Booking) => {
+    if (!booking.modifiedAt) return false;
+    const now = new Date();
+    const modifiedTime = new Date(booking.modifiedAt);
+    const timeDiff = now.getTime() - modifiedTime.getTime();
+    const tenMinutesInMs = 10 * 60 * 1000; // 10 minutes
+    return timeDiff <= tenMinutesInMs && booking.modifiedAt !== booking.createdAt;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed': return 'bg-green-100 text-green-800';
@@ -184,7 +194,11 @@ const Dashboard: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 {recentBookings.map((booking) => (
-                  <div key={booking._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div key={booking._id} className={`flex items-center justify-between p-4 rounded-lg transition-all duration-300 ${
+                    isBookingRecentlyModified(booking) 
+                      ? 'bg-orange-50 border-2 border-orange-200 shadow-md ring-1 ring-orange-300' 
+                      : 'bg-gray-50 hover:bg-gray-100'
+                  }`}>
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900">{booking.purpose}</h3>
                       <p className="text-sm text-gray-600">
@@ -194,7 +208,12 @@ const Dashboard: React.FC = () => {
                         {formatDate(booking.startTime)} - {formatDate(booking.endTime)}
                       </p>
                     </div>
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-2">
+                      {isBookingRecentlyModified(booking) && (
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800 animate-pulse">
+                          Modified
+                        </span>
+                      )}
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
                         {booking.status}
                       </span>

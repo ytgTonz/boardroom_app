@@ -59,6 +59,10 @@ const bookingSchema = new mongoose.Schema({
   createdAt: { 
     type: Date, 
     default: Date.now 
+  },
+  modifiedAt: {
+    type: Date,
+    default: Date.now
   }
 });
 

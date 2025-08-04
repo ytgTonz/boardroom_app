@@ -174,6 +174,7 @@ const cancelBooking = async (req, res) => {
     
     // Update booking status
     booking.status = 'cancelled';
+    booking.modifiedAt = new Date();
     await booking.save();
     
     // Create notifications for attendees about cancellation
@@ -223,6 +224,7 @@ const adminCancelBooking = async (req, res) => {
     
     // Update booking status
     booking.status = 'cancelled';
+    booking.modifiedAt = new Date();
     await booking.save();
     
     // Create notifications for all attendees about admin cancellation
@@ -436,6 +438,9 @@ const optOutOfBooking = async (req, res) => {
       (attendee) => attendee._id.toString() !== req.user.userId
     );
     
+    // Update modifiedAt timestamp
+    booking.modifiedAt = new Date();
+    
     await booking.save();
     
     // Notify organizer about opt-out
@@ -570,6 +575,9 @@ const updateBooking = async (req, res) => {
       existingBooking.externalAttendees = externalAttendees;
     }
     if (notes !== undefined) existingBooking.notes = notes;
+
+    // Update modifiedAt timestamp
+    existingBooking.modifiedAt = new Date();
 
     await existingBooking.save();
 
