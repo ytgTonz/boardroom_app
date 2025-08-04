@@ -139,6 +139,7 @@ const BookingForm: React.FC = () => {
 
     if (!isMinimumBookingTime(formData.startTime, formData.endTime)) {
       newErrors.endTime = 'Booking must be at least 30 minutes long';
+      newErrors.startTime = 'Booking must be at least 30 minutes long';
     }
 
     // Attendees are now optional - no validation required
