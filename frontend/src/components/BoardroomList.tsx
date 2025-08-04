@@ -104,7 +104,7 @@ const BoardroomList: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredBoardrooms.map((boardroom) => (
+            {boardrooms.map((boardroom) => (
               <div key={boardroom._id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                 {/* Boardroom Image */}
                 {boardroom.images && boardroom.images.length > 0 && (
