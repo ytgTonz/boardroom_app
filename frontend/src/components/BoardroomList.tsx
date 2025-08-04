@@ -13,7 +13,6 @@ const BoardroomList: React.FC = () => {
       try {
         const data = await boardroomsAPI.getAll();
         setBoardrooms(data);
-        setFilteredBoardrooms(data);
       } catch (error) {
         console.error('Error fetching boardrooms:', error);
       } finally {
@@ -23,21 +22,6 @@ const BoardroomList: React.FC = () => {
 
     fetchBoardrooms();
   }, []);
-
-  useEffect(() => {
-    let filtered = boardrooms;
-
-    // Apply search filter only
-    if (searchTerm) {
-      filtered = filtered.filter(room =>
-        room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        room.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        room.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    setFilteredBoardrooms(filtered);
-  }, [boardrooms, searchTerm]);
 
   const getCapacityColor = (capacity: number) => {
     if (capacity >= 15) return 'bg-red-100 text-red-800';
