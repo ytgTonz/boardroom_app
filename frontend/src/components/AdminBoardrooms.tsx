@@ -159,7 +159,7 @@ const AdminBoardrooms: React.FC = () => {
         } else {
           await boardroomsAPI.uploadImage(
             editingBoardroom._id,
-            selectedFile,
+            selectedFile || new File([], ''),
             newImageAlt || 'Boardroom image',
             isPrimaryImage
           );
