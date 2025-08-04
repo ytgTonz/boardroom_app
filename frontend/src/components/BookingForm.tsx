@@ -110,7 +110,19 @@ const BookingForm: React.FC = () => {
         newErrors.startTime = 'Start time cannot be in the past';
       }
 
-      
+      // Check working hours
+      if (!isWithinWorkingHours(formData.startTime)) {
+        newErrors.startTime = 'Start time must be between 07:00 and 16:00 (working hours)';
+      }
+
+      if (!isWithinWorkingHours(formData.endTime)) {
+        newErrors.endTime = 'End time must be between 07:00 and 16:00 (working hours)';
+      }
+
+      // Check if booking spans outside working hours
+      if (end.getHours() > 16 || (end.getHours() === 16 && end.getMinutes() > 0)) {
+        newErrors.endTime = 'Booking must end by 16:00 (working hours)';
+      }
     }
 
     if (!formData.purpose.trim()) {
