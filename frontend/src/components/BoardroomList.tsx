@@ -102,54 +102,19 @@ const BoardroomList: React.FC = () => {
         </p>
       </div>
 
-      {/* Filters */}
+      {/* Search */}
       <div className="card">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Search Rooms
-            </label>
-            <input
-              type="text"
-              placeholder="Search by name, location, or description..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Minimum Capacity
-            </label>
-            <select
-              value={capacityFilter}
-              onChange={(e) => setCapacityFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Any capacity</option>
-              <option value="2">2+ people</option>
-              <option value="5">5+ people</option>
-              <option value="10">10+ people</option>
-              <option value="15">15+ people</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Location
-            </label>
-            <select
-              value={locationFilter}
-              onChange={(e) => setLocationFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">All locations</option>
-              <option value="floor 1">Floor 1</option>
-              <option value="floor 2">Floor 2</option>
-              <option value="floor 3">Floor 3</option>
-            </select>
-          </div>
+        <div className="max-w-md">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Search Rooms
+          </label>
+          <input
+            type="text"
+            placeholder="Search by name, location, or description..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
         </div>
       </div>
 
