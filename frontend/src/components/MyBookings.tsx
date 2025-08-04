@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { bookingsAPI } from '../services/api';
 import { Booking } from '../types';
 import { useAuth } from '../contexts/AuthContext';
