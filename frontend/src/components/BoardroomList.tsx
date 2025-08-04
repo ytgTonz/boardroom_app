@@ -124,9 +124,6 @@ const BoardroomList: React.FC = () => {
           <h2 className="text-xl font-semibold text-gray-900">
             {filteredBoardrooms.length} Room{filteredBoardrooms.length !== 1 ? 's' : ''} Available
           </h2>
-          <div className="text-sm text-gray-500">
-            Showing {filteredBoardrooms.length} of {boardrooms.length} rooms
-          </div>
         </div>
 
         {filteredBoardrooms.length === 0 ? (
