@@ -9,12 +9,15 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Initialize structured logging
+const logger = require('./src/utils/logger');
+
 // Validate environment variables before starting the application
 const { validateEnvironment } = require('./src/utils/validateEnvironment');
 const environment = process.env.NODE_ENV || 'development';
 
 if (!validateEnvironment(environment)) {
-  console.error('❌ Environment validation failed. Application cannot start.');
+  logger.error('Environment validation failed. Application cannot start.');
   process.exit(1);
 }
 
