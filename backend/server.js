@@ -179,8 +179,21 @@ app.use((req, res, next) => {
 
 // MongoDB Connection with optimized settings
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/boardroom_booking';
-const { DatabaseMonitor } = require('./src/utils/databaseMonitor');
-const connectionOptions = DatabaseMonitor.getOptimizedConnectionOptions();
+const databaseMonitor = require('./src/utils/databaseMonitor');
+
+// Get optimized connection options (static method through class)
+const connectionOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  maxPoolSize: process.env.NODE_ENV === 'production' ? 20 : 10,
+  minPoolSize: process.env.NODE_ENV === 'production' ? 5 : 2,
+  maxIdleTimeMS: 30000,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+  heartbeatFrequencyMS: 10000,
+  retryWrites: true,
+  writeConcern: { w: 'majority', wtimeout: 5000 }
+};
 
 logger.info('Attempting to connect to MongoDB with optimized settings...', {
   uri: mongoUri.replace(/\/\/(.*):(.*)@/, '//*****:*****@'), // Hide credentials in logs
