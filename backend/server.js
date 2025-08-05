@@ -12,6 +12,9 @@ require('dotenv').config();
 // Initialize structured logging
 const logger = require('./src/utils/logger');
 
+// Initialize database monitor
+const databaseMonitor = require('./src/utils/databaseMonitor');
+
 // Validate environment variables before starting the application
 const { validateEnvironment } = require('./src/utils/validateEnvironment');
 const environment = process.env.NODE_ENV || 'development';
@@ -31,6 +34,7 @@ const bookingRoutes = require('./src/routes/bookings');
 const notificationRoutes = require('./src/routes/notifications');
 const userRoutes = require('./src/routes/users');
 const healthRoutes = require('./src/routes/health');
+const databaseRoutes = require('./src/routes/database');
 
 const app = express();
 const server = http.createServer(app);
@@ -197,6 +201,9 @@ app.use('/api/users', userRoutes);
 
 // Comprehensive health check routes
 app.use('/api/health', healthRoutes);
+
+// Database monitoring routes
+app.use('/api/database', databaseRoutes);
 
 // Email test endpoint (for development)
 if (process.env.NODE_ENV === 'development') {
