@@ -159,7 +159,7 @@ function validateImageKitConfig(imagekitConfig) {
  * @returns {boolean} - True if all validations pass, false otherwise
  */
 function validateEnvironment(environment = 'development') {
-  console.log(chalk.blue(`🔍 Validating environment variables for: ${environment}`));
+  console.log(colors.blue(`🔍 Validating environment variables for: ${environment}`));
   
   const requiredVars = REQUIRED_ENV_VARS[environment] || REQUIRED_ENV_VARS.development;
   const missingVars = [];
