@@ -40,7 +40,7 @@ try {
   // Initialize Sentry
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
-    environment: import.meta.env.VITE_NODE_ENV || 'development',
+    environment: import.meta.env.VITE_ENVIRONMENT || 'development',
     
     // Performance monitoring
     tracesSampleRate: import.meta.env.VITE_NODE_ENV === 'production' ? 0.1 : 1.0,
