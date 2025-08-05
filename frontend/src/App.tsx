@@ -26,12 +26,45 @@ import { useAuth } from './contexts/AuthContext';
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 axios.defaults.baseURL = apiUrl;
 
+// Set up axios interceptors for error tracking
+axios.interceptors.response.use(
+  (response) => {
+    // Track successful API calls as breadcrumbs
+    errorTracker.addBreadcrumb({
+      category: 'api',
+      message: `API Success: ${response.config.method?.toUpperCase()} ${response.config.url}`,
+      level: 'info',
+      data: {
+        status: response.status,
+        method: response.config.method,
+        url: response.config.url
+      }
+    });
+    return response;
+  },
+  (error) => {
+    // Track API errors
+    const endpoint = error.config?.url || 'unknown';
+    const method = error.config?.method || 'unknown';
+    const status = error.response?.status || 'unknown';
+    
+    errorTracker.trackApiError(endpoint, error, {
+      method,
+      status,
+      response: error.response?.data
+    });
+    
+    return Promise.reject(error);
+  }
+);
+
 // Log configuration in development
 if (import.meta.env.DEV) {
   console.log('🔧 Frontend Configuration:', {
     apiUrl,
     environment: import.meta.env.VITE_ENVIRONMENT || 'development',
-    version: import.meta.env.VITE_APP_VERSION || '1.0.0'
+    version: import.meta.env.VITE_APP_VERSION || '1.0.0',
+    sentry: errorTracker.getStatus()
   });
 }
 
