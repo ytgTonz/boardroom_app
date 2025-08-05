@@ -18,8 +18,18 @@ import AdminBookings from './components/AdminBookings';
 import AdminDashboard from './components/AdminDashboard';
 import { useAuth } from './contexts/AuthContext';
 
-// Set up axios defaults
-axios.defaults.baseURL = 'http://localhost:5000/api';
+// Set up axios defaults from environment variable
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+axios.defaults.baseURL = apiUrl;
+
+// Log configuration in development
+if (import.meta.env.DEV) {
+  console.log('🔧 Frontend Configuration:', {
+    apiUrl,
+    environment: import.meta.env.VITE_ENVIRONMENT || 'development',
+    version: import.meta.env.VITE_APP_VERSION || '1.0.0'
+  });
+}
 
 const AppContent = () => {
   const { user, loading } = useAuth();
