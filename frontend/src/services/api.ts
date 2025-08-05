@@ -1,4 +1,10 @@
+// Get API URL from environment variable with fallback
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// Validate API URL configuration
+if (!API_BASE_URL) {
+  throw new Error('VITE_API_URL environment variable is required');
+}
 
 // Helper function to handle API responses
 const handleResponse = async (response: Response) => {
