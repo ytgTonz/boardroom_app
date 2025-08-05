@@ -55,7 +55,7 @@ try {
       }),
       new Sentry.Replay({
         // Capture 10% of sessions for replay in production
-        sessionSampleRate: import.meta.env.VITE_NODE_ENV === 'production' ? 0.1 : 1.0,
+        sessionSampleRate: import.meta.env.VITE_ENVIRONMENT === 'production' ? 0.1 : 1.0,
         // Capture 100% of sessions with errors for replay
         errorSampleRate: 1.0,
       }),
