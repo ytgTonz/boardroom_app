@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const logger = require('../utils/logger');
 
 const register = async (req, res) => {
   try {
@@ -16,7 +17,8 @@ const register = async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists with this email' });
+      logger.logAuth('register', null, false, { email, reason: 'User already exists' });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
     // Validate password length
