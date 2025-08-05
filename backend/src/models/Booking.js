@@ -66,8 +66,13 @@ const bookingSchema = new mongoose.Schema({
   }
 });
 
-// Index for efficient queries
-bookingSchema.index({ boardroom: 1, startTime: 1, endTime: 1 });
-bookingSchema.index({ user: 1, createdAt: -1 });
+// Optimized indexes for performance
+bookingSchema.index({ boardroom: 1, startTime: 1, endTime: 1 }, { name: 'booking_room_time_range' });
+bookingSchema.index({ user: 1, createdAt: -1 }, { name: 'booking_user_created' });
+bookingSchema.index({ startTime: 1, endTime: 1 }, { name: 'booking_time_range' });
+bookingSchema.index({ status: 1, startTime: 1 }, { name: 'booking_status_time' });
+bookingSchema.index({ user: 1, status: 1, startTime: -1 }, { name: 'booking_user_status_time' });
+bookingSchema.index({ boardroom: 1, startTime: 1, status: 1 }, { name: 'booking_room_time_status' });
+bookingSchema.index({ createdAt: -1 }, { name: 'booking_created_desc' });
 
 module.exports = mongoose.model('Booking', bookingSchema); 
