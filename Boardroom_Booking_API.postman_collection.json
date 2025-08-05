@@ -1,0 +1,597 @@
+{
+  "info": {
+    "name": "Boardroom Booking API",
+    "description": "Complete API collection for Boardroom Booking Backend",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "boardroom_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "booking_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', response.token);",
+                  "    pm.collectionVariables.set('user_id', response.user.id);",
+                  "    pm.test('User registered successfully', function () {",
+                  "        pm.expect(response.token).to.be.a('string');",
+                  "        pm.expect(response.user.email).to.eql(pm.iterationData.get('email') || 'test@example.com');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', response.token);",
+                  "    pm.collectionVariables.set('user_id', response.user.id);",
+                  "    pm.test('Login successful', function () {",
+                  "        pm.expect(response.token).to.be.a('string');",
+                  "        pm.expect(response.user).to.have.property('email');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Boardrooms",
+      "item": [
+        {
+          "name": "Get All Boardrooms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/boardrooms",
+              "host": ["{{base_url}}"],
+              "path": ["boardrooms"]
+            }
+          }
+        },
+        {
+          "name": "Create Boardroom",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('boardroom_id', response._id);",
+                  "    pm.test('Boardroom created successfully', function () {",
+                  "        pm.expect(response.name).to.be.a('string');",
+                  "        pm.expect(response.capacity).to.be.a('number');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Conference Room\",\n  \"capacity\": 10,\n  \"location\": \"2nd Floor, East Wing\",\n  \"amenities\": [\"Projector\", \"Whiteboard\"],\n  \"description\": \"Modern conference room for team meetings\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/boardrooms",
+              "host": ["{{base_url}}"],
+              "path": ["boardrooms"]
+            }
+          }
+        },
+        {
+          "name": "Get Boardroom by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/boardrooms/{{boardroom_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["boardrooms", "{{boardroom_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Boardroom",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Conference Room\",\n  \"capacity\": 12,\n  \"amenities\": [\"Projector\", \"Whiteboard\", \"Video Conferencing\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/boardrooms/{{boardroom_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["boardrooms", "{{boardroom_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Boardroom",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/boardrooms/{{boardroom_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["boardrooms", "{{boardroom_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Get All Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Create Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('booking_id', response._id);",
+                  "    pm.test('Booking created successfully', function () {",
+                  "        pm.expect(response.purpose).to.be.a('string');",
+                  "        pm.expect(response.status).to.eql('confirmed');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"boardroom\": \"{{boardroom_id}}\",\n  \"startTime\": \"2025-08-10T09:00:00.000Z\",\n  \"endTime\": \"2025-08-10T11:00:00.000Z\",\n  \"purpose\": \"Team Planning Meeting\",\n  \"notes\": \"Please prepare presentation screen\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Check Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/availability/{{boardroom_id}}?startTime=2025-08-10T09:00:00.000Z&endTime=2025-08-10T11:00:00.000Z",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "availability", "{{boardroom_id}}"],
+              "query": [
+                {
+                  "key": "startTime",
+                  "value": "2025-08-10T09:00:00.000Z"
+                },
+                {
+                  "key": "endTime",
+                  "value": "2025-08-10T11:00:00.000Z"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Booking",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"purpose\": \"Updated Team Planning Meeting\",\n  \"notes\": \"Room setup changed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "{{booking_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "{{booking_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"]
+            }
+          }
+        },
+        {
+          "name": "Get Unread Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications?read=false",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"],
+              "query": [
+                {
+                  "key": "read",
+                  "value": "false"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health & Monitoring",
+      "item": [
+        {
+          "name": "Basic Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Detailed Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/detailed",
+              "host": ["{{base_url}}"],
+              "path": ["health", "detailed"]
+            }
+          }
+        },
+        {
+          "name": "Database Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/database",
+              "host": ["{{base_url}}"],
+              "path": ["health", "database"]
+            }
+          }
+        },
+        {
+          "name": "Application Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/metrics",
+              "host": ["{{base_url}}"],
+              "path": ["health", "metrics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Database Monitoring",
+      "item": [
+        {
+          "name": "Database Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/database/metrics",
+              "host": ["{{base_url}}"],
+              "path": ["database", "metrics"]
+            }
+          }
+        },
+        {
+          "name": "Query Performance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/database/queries",
+              "host": ["{{base_url}}"],
+              "path": ["database", "queries"]
+            }
+          }
+        },
+        {
+          "name": "Optimization Recommendations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/database/optimize/recommendations",
+              "host": ["{{base_url}}"],
+              "path": ["database", "optimize", "recommendations"]
+            }
+          }
+        },
+        {
+          "name": "Create Database Indexes",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/database/optimize/indexes",
+              "host": ["{{base_url}}"],
+              "path": ["database", "optimize", "indexes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Backup Management",
+      "item": [
+        {
+          "name": "List Backups",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/backup/list",
+              "host": ["{{base_url}}"],
+              "path": ["backup", "list"]
+            }
+          }
+        },
+        {
+          "name": "Create Full Backup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"manual-backup-test\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/backup/create/full",
+              "host": ["{{base_url}}"],
+              "path": ["backup", "create", "full"]
+            }
+          }
+        },
+        {
+          "name": "Backup Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/backup/status",
+              "host": ["{{base_url}}"],
+              "path": ["backup", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Monitoring",
+      "item": [
+        {
+          "name": "Sentry Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/monitoring/sentry",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "sentry"]
+            }
+          }
+        },
+        {
+          "name": "Test Error Tracking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"exception\",\n  \"message\": \"Test error from Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/monitoring/test-error",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "test-error"]
+            }
+          }
+        },
+        {
+          "name": "Monitoring Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/monitoring/status",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring", "status"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
