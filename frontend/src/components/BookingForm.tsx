@@ -4,6 +4,7 @@ import { boardroomsAPI, bookingsAPI, usersAPI } from '../services/api';
 import { Boardroom, BookingFormData, User, AttendeeOption } from '../types';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
+import BookingConflictModal from './BookingConflictModal';
 
 const BookingForm: React.FC = () => {
   const location = useLocation();
