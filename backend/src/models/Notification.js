@@ -26,4 +26,10 @@ const notificationSchema = new mongoose.Schema({
   }
 });
 
+// Optimized indexes for performance
+notificationSchema.index({ user: 1, read: 1, createdAt: -1 }, { name: 'notification_user_read_time' });
+notificationSchema.index({ user: 1, createdAt: -1 }, { name: 'notification_user_time' });
+notificationSchema.index({ booking: 1 }, { name: 'notification_booking', sparse: true });
+notificationSchema.index({ createdAt: -1 }, { name: 'notification_recent' });
+
 module.exports = mongoose.model('Notification', notificationSchema); 
