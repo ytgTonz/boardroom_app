@@ -9,6 +9,9 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Initialize Sentry error tracking (must be first)
+const errorTracker = require('./src/utils/sentryConfig');
+
 // Initialize structured logging
 const logger = require('./src/utils/logger');
 
@@ -35,6 +38,7 @@ const notificationRoutes = require('./src/routes/notifications');
 const userRoutes = require('./src/routes/users');
 const healthRoutes = require('./src/routes/health');
 const databaseRoutes = require('./src/routes/database');
+const monitoringRoutes = require('./src/routes/monitoring');
 
 const app = express();
 const server = http.createServer(app);
@@ -144,6 +148,9 @@ io.on('connection', (socket) => {
 // Make io available to routes
 app.set('io', io);
 
+// Sentry request handler (must be first middleware)
+app.use(errorTracker.getExpressRequestHandler());
+
 // Middleware
 app.use(express.json());
 app.use(morgan('combined'));
@@ -212,6 +219,9 @@ app.use('/api/health', healthRoutes);
 // Database monitoring routes
 app.use('/api/database', databaseRoutes);
 
+// Error tracking and monitoring routes
+app.use('/api/monitoring', monitoringRoutes);
+
 // Email test endpoint (for development)
 if (process.env.NODE_ENV === 'development') {
   app.post('/api/test-email', emailLimiter, async (req, res) => {
@@ -248,8 +258,23 @@ app.get('/', (req, res) => {
   });
 });
 
+// Sentry error handler (must be before other error handlers)
+app.use(errorTracker.getExpressErrorHandler());
+
 // Error handling middleware
 app.use((err, req, res, next) => {
+  // Track error with Sentry
+  errorTracker.captureException(err, {
+    tags: {
+      component: 'express_error_handler'
+    },
+    extra: {
+      url: req.url,
+      method: req.method,
+      userAgent: req.get('User-Agent')
+    }
+  });
+
   logger.error('❌ Server error:', err.stack);
   res.status(500).json({ message: 'Something went wrong!' });
 });
