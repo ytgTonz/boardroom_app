@@ -10,10 +10,12 @@ const jwt = require('jsonwebtoken');
 // Mock dependencies
 jest.mock('../models/User');
 jest.mock('../utils/logger');
+jest.mock('../utils/sentryConfig');
 
 const User = require('../models/User');
 const authController = require('../controllers/authController');
 const logger = require('../utils/logger');
+const errorTracker = require('../utils/sentryConfig');
 
 // Create test app
 const app = express();
