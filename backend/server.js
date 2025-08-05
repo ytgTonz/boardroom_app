@@ -179,7 +179,6 @@ app.use((req, res, next) => {
 
 // MongoDB Connection with optimized settings
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/boardroom_booking';
-const databaseMonitor = require('./src/utils/databaseMonitor');
 
 // Get optimized connection options (static method through class)
 const connectionOptions = {
