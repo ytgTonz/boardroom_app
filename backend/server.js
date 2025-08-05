@@ -143,9 +143,24 @@ app.set('io', io);
 app.use(express.json());
 app.use(morgan('combined'));
 
-// Request logging middleware
+// Request logging middleware - replace with Winston HTTP logging
 app.use((req, res, next) => {
-  logger.info(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  const requestLogger = logger.withRequest(req);
+  req.logger = requestLogger;
+  
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    requestLogger.http('HTTP Request', {
+      method: req.method,
+      url: req.path,
+      statusCode: res.statusCode,
+      duration: `${duration}ms`,
+      contentLength: res.get('content-length')
+    });
+  });
+  
   next();
 });
 
@@ -168,8 +183,8 @@ mongoose.connect(mongoUri, {
   logger.info('⏰ Initializing meeting reminder scheduler...');
 })
 .catch(err => {
-  console.error('❌ MongoDB connection error:', err);
-  console.error('Please check your MongoDB connection string and ensure MongoDB is running');
+  logger.error('❌ MongoDB connection error:', err);
+  logger.error('Please check your MongoDB connection string and ensure MongoDB is running');
 });
 
 // Routes with specific rate limiting
@@ -230,7 +245,7 @@ app.get('/', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('❌ Server error:', err.stack);
+  logger.error('❌ Server error:', err.stack);
   res.status(500).json({ message: 'Something went wrong!' });
 });
 
