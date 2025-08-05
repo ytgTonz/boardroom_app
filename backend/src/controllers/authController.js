@@ -108,6 +108,7 @@ const login = async (req, res) => {
     );
 
     // Track successful login
+    logger.logAuth('login', user._id.toString(), true, { email, name: user.name });
     errorTracker.trackAuth('login', user._id.toString(), true, { email, name: user.name });
     errorTracker.setUser({ id: user._id.toString(), email, name: user.name });
 
