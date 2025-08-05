@@ -52,4 +52,13 @@ const boardroomSchema = new mongoose.Schema({
   }
 });
 
+// Optimized indexes for performance
+boardroomSchema.index({ isActive: 1, capacity: 1 }, { name: 'boardroom_active_capacity' });
+boardroomSchema.index({ location: 1, isActive: 1 }, { name: 'boardroom_location_active' });
+boardroomSchema.index({ 
+  name: 'text', 
+  description: 'text', 
+  'amenities': 'text' 
+}, { name: 'boardroom_text_search' });
+
 module.exports = mongoose.model('Boardroom', boardroomSchema); 
