@@ -32,4 +32,9 @@ const userSchema = new mongoose.Schema({
   }
 });
 
+// Optimized indexes for performance
+userSchema.index({ email: 1 }, { unique: true, name: 'user_email_unique' });
+userSchema.index({ role: 1, createdAt: -1 }, { name: 'user_role_created' });
+userSchema.index({ lastLogin: -1 }, { name: 'user_last_login' });
+
 module.exports = mongoose.model('User', userSchema); 
