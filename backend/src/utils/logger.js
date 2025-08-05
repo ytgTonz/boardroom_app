@@ -100,29 +100,30 @@ if (process.env.NODE_ENV !== 'test') {
     })
   );
 
-// Error-only file transport
-transports.push(
-  new DailyRotateFile({
-    filename: path.join(logsDir, 'error-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    maxSize: '20m',
-    maxFiles: '14d',
-    format: logFormat,
-    level: 'error'
-  })
-);
+  // Error-only file transport
+  transports.push(
+    new DailyRotateFile({
+      filename: path.join(logsDir, 'error-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      maxSize: '20m',
+      maxFiles: '14d',
+      format: logFormat,
+      level: 'error'
+    })
+  );
 
-// HTTP requests log file
-transports.push(
-  new DailyRotateFile({
-    filename: path.join(logsDir, 'http-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    maxSize: '20m',
-    maxFiles: '7d',
-    format: logFormat,
-    level: 'http'
-  })
-);
+  // HTTP requests log file
+  transports.push(
+    new DailyRotateFile({
+      filename: path.join(logsDir, 'http-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      maxSize: '20m',
+      maxFiles: '7d',
+      format: logFormat,
+      level: 'http'
+    })
+  );
+}
 
 // Create the logger
 const logger = winston.createLogger({
