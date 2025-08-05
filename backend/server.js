@@ -9,6 +9,15 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Validate environment variables before starting the application
+const { validateEnvironment } = require('./src/utils/validateEnvironment');
+const environment = process.env.NODE_ENV || 'development';
+
+if (!validateEnvironment(environment)) {
+  console.error('❌ Environment validation failed. Application cannot start.');
+  process.exit(1);
+}
+
 // Import services
 const emailService = require('./src/services/emailService');
 const reminderScheduler = require('./src/services/reminderScheduler');
