@@ -83,6 +83,13 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    // Check if both email and password are provided
+    if (!email || !password) {
+      return res.status(400).json({ 
+        message: 'Email and password are required' 
+      });
+    }
+    
     const user = await User.findOne({ email });
     if (!user || !await bcrypt.compare(password, user.password)) {
       errorTracker.trackAuth('login', email, false, { reason: 'Invalid credentials' });
