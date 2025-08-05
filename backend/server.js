@@ -39,6 +39,7 @@ const userRoutes = require('./src/routes/users');
 const healthRoutes = require('./src/routes/health');
 const databaseRoutes = require('./src/routes/database');
 const monitoringRoutes = require('./src/routes/monitoring');
+const backupRoutes = require('./src/routes/backup');
 
 const app = express();
 const server = http.createServer(app);
@@ -221,6 +222,9 @@ app.use('/api/database', databaseRoutes);
 
 // Error tracking and monitoring routes
 app.use('/api/monitoring', monitoringRoutes);
+
+// Database backup routes
+app.use('/api/backup', backupRoutes);
 
 // Email test endpoint (for development)
 if (process.env.NODE_ENV === 'development') {
