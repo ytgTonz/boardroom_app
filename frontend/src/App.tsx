@@ -83,7 +83,11 @@ const AppContent = () => {
 };
 
 const App = () => {
-  return <AppContent />;
+  return (
+    <ErrorBoundary componentName="Application">
+      <AppContent />
+    </ErrorBoundary>
+  );
 };
 
 export default App; 
