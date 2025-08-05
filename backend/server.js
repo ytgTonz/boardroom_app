@@ -195,18 +195,8 @@ app.use('/api/bookings', bookingLimiter, bookingRoutes);
 app.use('/api/notifications', emailLimiter, notificationRoutes);
 app.use('/api/users', userRoutes);
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    database: dbStatus,
-    environment: process.env.NODE_ENV || 'development',
-    emailService: 'active',
-    reminderService: 'active'
-  });
-});
+// Comprehensive health check routes
+app.use('/api/health', healthRoutes);
 
 // Email test endpoint (for development)
 if (process.env.NODE_ENV === 'development') {
