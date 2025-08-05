@@ -41,6 +41,7 @@ const register = async (req, res) => {
     );
 
     // Track successful registration
+    logger.logAuth('register', user._id.toString(), true, { email, name });
     errorTracker.trackAuth('register', user._id.toString(), true, { email, name });
     errorTracker.setUser({ id: user._id.toString(), email, name });
 
