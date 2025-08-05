@@ -21,6 +21,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@sentry/node": "^10.1.0",
+    "@sentry/profiling-node": "^10.1.0",
     "@types/nodemailer": "^6.4.17",
     "bcryptjs": "^2.4.3",
     "chalk": "^5.5.0",
