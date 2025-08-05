@@ -43,7 +43,7 @@ try {
     environment: import.meta.env.VITE_ENVIRONMENT || 'development',
     
     // Performance monitoring
-    tracesSampleRate: import.meta.env.VITE_NODE_ENV === 'production' ? 0.1 : 1.0,
+    tracesSampleRate: import.meta.env.VITE_ENVIRONMENT === 'production' ? 0.1 : 1.0,
     
     // React integration
     integrations: [
