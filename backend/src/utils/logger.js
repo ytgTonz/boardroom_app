@@ -7,10 +7,10 @@ const winston = require('winston');
 const DailyRotateFile = require('winston-daily-rotate-file');
 const path = require('path');
 
-// Create logs directory if it doesn't exist
+// Create logs directory if it doesn't exist (skip in test environment)
 const fs = require('fs');
 const logsDir = path.join(__dirname, '../../logs');
-if (!fs.existsSync(logsDir)) {
+if (!fs.existsSync(logsDir) && process.env.NODE_ENV !== 'test') {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
