@@ -256,14 +256,17 @@ app.use('*', (req, res) => {
 });
 
 server.listen(PORT, () => {
-  logger.info(`🚀 Server running on port ${PORT}`);
-  logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  logger.info(`🔗 Health check: http://localhost:${PORT}/api/health`);
-  logger.info(`📧 Email service: ${process.env.EMAIL_USER ? 'Configured' : 'Using test mode'}`);
-  logger.info(`🔌 Socket.IO enabled for real-time updates`);
-  logger.info(`⚡ Rate limiting enabled:`);
-  logger.info(`   - General API: ${rateLimits.general} requests/15min`);
-  logger.info(`   - Authentication: ${rateLimits.auth} requests/15min`);
-  logger.info(`   - Booking operations: ${rateLimits.booking} requests/min`);
-  logger.info(`   - Email/notifications: ${rateLimits.email} requests/hour`);
+  logger.startup(`Server running on port ${PORT}`, {
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    healthCheck: `http://localhost:${PORT}/api/health`,
+    emailService: process.env.EMAIL_USER ? 'Configured' : 'Test mode',
+    socketIO: 'enabled',
+    rateLimits: {
+      general: `${rateLimits.general} requests/15min`,
+      auth: `${rateLimits.auth} requests/15min`,
+      booking: `${rateLimits.booking} requests/min`,
+      email: `${rateLimits.email} requests/hour`
+    }
+  });
 });
