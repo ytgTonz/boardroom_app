@@ -4,6 +4,9 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
+// Import Sentry for error tracking
+import { errorTracker } from './utils/sentryConfig';
+
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import Login from './components/Login';
