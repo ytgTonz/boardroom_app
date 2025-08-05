@@ -34,6 +34,11 @@ describe('Authentication Controller', () => {
     // Mock logger methods
     logger.logAuth = jest.fn();
     logger.logError = jest.fn();
+    
+    // Mock errorTracker methods
+    errorTracker.trackAuth = jest.fn();
+    errorTracker.setUser = jest.fn();
+    errorTracker.captureException = jest.fn();
   });
 
   describe('POST /login', () => {
