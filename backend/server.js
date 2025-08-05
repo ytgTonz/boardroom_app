@@ -119,20 +119,20 @@ const io = socketIo(server, {
 
 // Socket.IO event handlers
 io.on('connection', (socket) => {
-  console.log(`🔌 User connected: ${socket.id}`);
+  logger.info(`🔌 User connected: ${socket.id}`);
 
   socket.on('join-room', (room) => {
     socket.join(room);
-    console.log(`👤 User ${socket.id} joined room: ${room}`);
+    logger.info(`👤 User ${socket.id} joined room: ${room}`);
   });
 
   socket.on('leave-room', (room) => {
     socket.leave(room);
-    console.log(`👤 User ${socket.id} left room: ${room}`);
+    logger.info(`👤 User ${socket.id} left room: ${room}`);
   });
 
   socket.on('disconnect', () => {
-    console.log(`🔌 User disconnected: ${socket.id}`);
+    logger.info(`🔌 User disconnected: ${socket.id}`);
   });
 });
 
@@ -145,27 +145,27 @@ app.use(morgan('combined'));
 
 // Request logging middleware
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  logger.info(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
 
 // MongoDB Connection
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/boardroom_booking';
-console.log('Attempting to connect to MongoDB...');
+logger.info('Attempting to connect to MongoDB...');
 
 mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
 .then(() => {
-  console.log('✅ Connected to MongoDB successfully');
-  console.log(`📊 Database: ${mongoUri.split('/').pop()}`);
+  logger.info('✅ Connected to MongoDB successfully');
+  logger.info(`📊 Database: ${mongoUri.split('/').pop()}`);
   
   // Initialize email service after DB connection
-  console.log('📧 Initializing email service...');
+  logger.info('📧 Initializing email service...');
   
   // Initialize reminder scheduler after DB connection
-  console.log('⏰ Initializing meeting reminder scheduler...');
+  logger.info('⏰ Initializing meeting reminder scheduler...');
 })
 .catch(err => {
   console.error('❌ MongoDB connection error:', err);
@@ -236,19 +236,19 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use('*', (req, res) => {
-  console.log(`❌ Route not found: ${req.method} ${req.originalUrl}`);
+  logger.info(`❌ Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ message: 'Route not found' });
 });
 
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`📧 Email service: ${process.env.EMAIL_USER ? 'Configured' : 'Using test mode'}`);
-  console.log(`🔌 Socket.IO enabled for real-time updates`);
-  console.log(`⚡ Rate limiting enabled:`);
-  console.log(`   - General API: ${rateLimits.general} requests/15min`);
-  console.log(`   - Authentication: ${rateLimits.auth} requests/15min`);
-  console.log(`   - Booking operations: ${rateLimits.booking} requests/min`);
-  console.log(`   - Email/notifications: ${rateLimits.email} requests/hour`);
+  logger.info(`🚀 Server running on port ${PORT}`);
+  logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`🔗 Health check: http://localhost:${PORT}/api/health`);
+  logger.info(`📧 Email service: ${process.env.EMAIL_USER ? 'Configured' : 'Using test mode'}`);
+  logger.info(`🔌 Socket.IO enabled for real-time updates`);
+  logger.info(`⚡ Rate limiting enabled:`);
+  logger.info(`   - General API: ${rateLimits.general} requests/15min`);
+  logger.info(`   - Authentication: ${rateLimits.auth} requests/15min`);
+  logger.info(`   - Booking operations: ${rateLimits.booking} requests/min`);
+  logger.info(`   - Email/notifications: ${rateLimits.email} requests/hour`);
 });
