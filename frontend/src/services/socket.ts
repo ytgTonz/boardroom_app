@@ -10,7 +10,12 @@ class SocketService {
       return this.socket;
     }
 
-    const serverUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
+    // Get socket URL from environment variable
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
+    
+    if (import.meta.env.DEV) {
+      console.log('🔌 Socket.IO connecting to:', socketUrl);
+    }
     
     this.socket = io(serverUrl, {
       withCredentials: true,
