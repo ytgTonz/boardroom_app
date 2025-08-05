@@ -68,7 +68,7 @@ function validateJWTSecret(jwtSecret) {
   
   // JWT secret should be at least 32 characters long for security
   if (jwtSecret.length < 32) {
-    console.error(chalk.red('❌ JWT_SECRET must be at least 32 characters long for security'));
+    console.error(colors.red('❌ JWT_SECRET must be at least 32 characters long for security'));
     return false;
   }
   
@@ -83,7 +83,7 @@ function validateJWTSecret(jwtSecret) {
   ];
   
   if (insecureSecrets.includes(jwtSecret)) {
-    console.error(chalk.red('❌ JWT_SECRET appears to be a default/example value. Use a secure random string.'));
+    console.error(colors.red('❌ JWT_SECRET appears to be a default/example value. Use a secure random string.'));
     return false;
   }
   
@@ -101,7 +101,7 @@ function validateMongoURI(mongoUri) {
   // Basic MongoDB URI validation
   const mongoUriRegex = /^mongodb(\+srv)?:\/\/.+/;
   if (!mongoUriRegex.test(mongoUri)) {
-    console.error(chalk.red('❌ MONGODB_URI format is invalid. Expected: mongodb://... or mongodb+srv://...'));
+    console.error(colors.red('❌ MONGODB_URI format is invalid. Expected: mongodb://... or mongodb+srv://...'));
     return false;
   }
   
@@ -117,14 +117,14 @@ function validateEmailConfig(emailConfig) {
   const { EMAIL_USER, EMAIL_APP_PASSWORD } = emailConfig;
   
   if (!EMAIL_USER || !EMAIL_APP_PASSWORD) {
-    console.warn(chalk.yellow('⚠️  EMAIL_USER or EMAIL_APP_PASSWORD not set. Email functionality will use test mode.'));
+    console.warn(colors.yellow('⚠️  EMAIL_USER or EMAIL_APP_PASSWORD not set. Email functionality will use test mode.'));
     return true; // Email is optional in development
   }
   
   // Basic email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(EMAIL_USER)) {
-    console.error(chalk.red('❌ EMAIL_USER format is invalid. Expected: valid email address'));
+    console.error(colors.red('❌ EMAIL_USER format is invalid. Expected: valid email address'));
     return false;
   }
   
@@ -140,13 +140,13 @@ function validateImageKitConfig(imagekitConfig) {
   const { IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY, IMAGEKIT_URL_ENDPOINT } = imagekitConfig;
   
   if (!IMAGEKIT_PUBLIC_KEY || !IMAGEKIT_PRIVATE_KEY || !IMAGEKIT_URL_ENDPOINT) {
-    console.warn(chalk.yellow('⚠️  ImageKit configuration incomplete. Image upload functionality may not work.'));
+    console.warn(colors.yellow('⚠️  ImageKit configuration incomplete. Image upload functionality may not work.'));
     return true; // ImageKit is optional for basic functionality
   }
   
   // Validate URL endpoint format
   if (IMAGEKIT_URL_ENDPOINT && !IMAGEKIT_URL_ENDPOINT.startsWith('https://ik.imagekit.io/')) {
-    console.error(chalk.red('❌ IMAGEKIT_URL_ENDPOINT format is invalid. Expected: https://ik.imagekit.io/...'));
+    console.error(colors.red('❌ IMAGEKIT_URL_ENDPOINT format is invalid. Expected: https://ik.imagekit.io/...'));
     return false;
   }
   
@@ -173,9 +173,9 @@ function validateEnvironment(environment = 'development') {
   });
   
   if (missingVars.length > 0) {
-    console.error(chalk.red('❌ Missing required environment variables:'));
+    console.error(colors.red('❌ Missing required environment variables:'));
     missingVars.forEach(varName => {
-      console.error(chalk.red(`   - ${varName}`));
+      console.error(colors.red(`   - ${varName}`));
     });
     validationErrors.push('Missing required environment variables');
   }
@@ -208,27 +208,27 @@ function validateEnvironment(environment = 'development') {
   }
   
   // Display optional variables status
-  console.log(chalk.blue('📋 Optional environment variables:'));
+  console.log(colors.blue('📋 Optional environment variables:'));
   Object.entries(OPTIONAL_ENV_VARS).forEach(([varName, description]) => {
     const status = process.env[varName] ? '✅ Set' : '⚪ Not set (using default)';
-    console.log(chalk.gray(`   ${varName}: ${status} - ${description}`));
+    console.log(colors.gray(`   ${varName}: ${status} - ${description}`));
   });
   
   // Summary
   if (validationErrors.length === 0) {
-    console.log(chalk.green(`✅ Environment validation passed for ${environment}`));
+    console.log(colors.green(`✅ Environment validation passed for ${environment}`));
     return true;
   } else {
-    console.error(chalk.red(`❌ Environment validation failed with ${validationErrors.length} error(s):`));
+    console.error(colors.red(`❌ Environment validation failed with ${validationErrors.length} error(s):`));
     validationErrors.forEach(error => {
-      console.error(chalk.red(`   - ${error}`));
+      console.error(colors.red(`   - ${error}`));
     });
     
-    console.log(chalk.yellow('\n💡 Quick fix guide:'));
-    console.log(chalk.yellow('   1. Copy .env.example to .env'));
-    console.log(chalk.yellow('   2. Fill in all required values'));
-    console.log(chalk.yellow('   3. Generate a secure JWT_SECRET: openssl rand -base64 32'));
-    console.log(chalk.yellow('   4. Restart the application'));
+    console.log(colors.yellow('\n💡 Quick fix guide:'));
+    console.log(colors.yellow('   1. Copy .env.example to .env'));
+    console.log(colors.yellow('   2. Fill in all required values'));
+    console.log(colors.yellow('   3. Generate a secure JWT_SECRET: openssl rand -base64 32'));
+    console.log(colors.yellow('   4. Restart the application'));
     
     return false;
   }
