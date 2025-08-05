@@ -77,8 +77,8 @@ const consoleFormat = winston.format.combine(
 // Create transports
 const transports = [];
 
-// Console transport for development
-if (process.env.NODE_ENV !== 'production') {
+// Console transport for development (but not test to reduce noise)
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
   transports.push(
     new winston.transports.Console({
       level: 'debug',
@@ -87,17 +87,18 @@ if (process.env.NODE_ENV !== 'production') {
   );
 }
 
-// File transport for all logs
-transports.push(
-  new DailyRotateFile({
-    filename: path.join(logsDir, 'application-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    maxSize: '20m',
-    maxFiles: '14d',
-    format: logFormat,
-    level: process.env.LOG_LEVEL || 'info'
-  })
-);
+// File transport for all logs (skip in test environment)
+if (process.env.NODE_ENV !== 'test') {
+  transports.push(
+    new DailyRotateFile({
+      filename: path.join(logsDir, 'application-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      maxSize: '20m',
+      maxFiles: '14d',
+      format: logFormat,
+      level: process.env.LOG_LEVEL || 'info'
+    })
+  );
 
 // Error-only file transport
 transports.push(
