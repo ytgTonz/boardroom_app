@@ -11,7 +11,9 @@
       "Bash(chmod:*)",
       "Bash(node:*)",
       "Bash(rm:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(tasklist)",
+      "Bash(taskkill:*)"
     ],
     "deny": []
   }

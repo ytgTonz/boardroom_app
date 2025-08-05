@@ -26,12 +26,67 @@ const PORT = process.env.PORT || 5000;
 // Security middleware
 app.use(helmet());
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+// Rate limiting configuration
+const createRateLimiter = (windowMs, max, message) => rateLimit({
+  windowMs,
+  max,
+  message: { 
+    error: 'Too many requests',
+    message,
+    retryAfter: Math.ceil(windowMs / 1000)
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      error: 'Too many requests',
+      message,
+      retryAfter: Math.ceil(windowMs / 1000)
+    });
+  }
 });
-app.use(limiter);
+
+// Production rate limiting configuration
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Configurable rate limits with environment variable fallbacks
+const rateLimits = {
+  general: parseInt(process.env.RATE_LIMIT_GENERAL_MAX) || (isProduction ? 1000 : 100),
+  auth: parseInt(process.env.RATE_LIMIT_AUTH_MAX) || (isProduction ? 20 : 50),
+  booking: parseInt(process.env.RATE_LIMIT_BOOKING_MAX) || (isProduction ? 30 : 50),
+  email: parseInt(process.env.RATE_LIMIT_EMAIL_MAX) || (isProduction ? 10 : 20)
+};
+
+// General API rate limiting
+const generalLimiter = createRateLimiter(
+  15 * 60 * 1000, // 15 minutes
+  rateLimits.general,
+  'Too many requests from this IP, please try again later.'
+);
+
+// Authentication rate limiting - more restrictive
+const authLimiter = createRateLimiter(
+  15 * 60 * 1000, // 15 minutes
+  rateLimits.auth,
+  'Too many authentication attempts, please try again later.'
+);
+
+// Booking operations rate limiting
+const bookingLimiter = createRateLimiter(
+  60 * 1000, // 1 minute
+  rateLimits.booking,
+  'Too many booking requests, please slow down.'
+);
+
+// Email/notification rate limiting
+const emailLimiter = createRateLimiter(
+  60 * 60 * 1000, // 1 hour
+  rateLimits.email,
+  'Email sending limit reached, please try again later.'
+);
+
+// Apply general rate limiting to all routes
+app.use(generalLimiter);
 
 // CORS configuration
 const corsOptions = {
@@ -105,11 +160,11 @@ mongoose.connect(mongoUri, {
   console.error('Please check your MongoDB connection string and ensure MongoDB is running');
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
+// Routes with specific rate limiting
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/boardrooms', boardroomRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/notifications', notificationRoutes);
+app.use('/api/bookings', bookingLimiter, bookingRoutes);
+app.use('/api/notifications', emailLimiter, notificationRoutes);
 app.use('/api/users', userRoutes);
 
 // Health check endpoint
@@ -127,7 +182,7 @@ app.get('/api/health', (req, res) => {
 
 // Email test endpoint (for development)
 if (process.env.NODE_ENV === 'development') {
-  app.post('/api/test-email', async (req, res) => {
+  app.post('/api/test-email', emailLimiter, async (req, res) => {
     try {
       const { to, subject, message } = req.body;
       
@@ -179,4 +234,9 @@ server.listen(PORT, () => {
   console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
   console.log(`📧 Email service: ${process.env.EMAIL_USER ? 'Configured' : 'Using test mode'}`);
   console.log(`🔌 Socket.IO enabled for real-time updates`);
+  console.log(`⚡ Rate limiting enabled:`);
+  console.log(`   - General API: ${rateLimits.general} requests/15min`);
+  console.log(`   - Authentication: ${rateLimits.auth} requests/15min`);
+  console.log(`   - Booking operations: ${rateLimits.booking} requests/min`);
+  console.log(`   - Email/notifications: ${rateLimits.email} requests/hour`);
 });
