@@ -6,6 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const databaseMonitor = require('../utils/databaseMonitor');
+const databaseOptimizer = require('../utils/databaseOptimizer');
 const logger = require('../utils/logger');
 
 // Database health check
