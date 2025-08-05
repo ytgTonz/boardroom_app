@@ -179,7 +179,7 @@ app.use((req, res, next) => {
 
 // MongoDB Connection with optimized settings
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/boardroom_booking';
-const DatabaseMonitor = require('./src/utils/databaseMonitor');
+const { DatabaseMonitor } = require('./src/utils/databaseMonitor');
 const connectionOptions = DatabaseMonitor.getOptimizedConnectionOptions();
 
 logger.info('Attempting to connect to MongoDB with optimized settings...', {
