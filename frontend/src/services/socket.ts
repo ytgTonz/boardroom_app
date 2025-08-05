@@ -17,7 +17,7 @@ class SocketService {
       console.log('🔌 Socket.IO connecting to:', socketUrl);
     }
     
-    this.socket = io(serverUrl, {
+    this.socket = io(socketUrl, {
       withCredentials: true,
       transports: ['websocket', 'polling'],
       reconnection: true,
