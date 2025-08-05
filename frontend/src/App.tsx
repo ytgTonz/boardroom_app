@@ -16,6 +16,7 @@ import AdminBoardrooms from './components/AdminBoardrooms';
 import AdminUsers from './components/AdminUsers';
 import AdminBookings from './components/AdminBookings';
 import AdminDashboard from './components/AdminDashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 import { useAuth } from './contexts/AuthContext';
 
 // Set up axios defaults from environment variable
