@@ -316,10 +316,12 @@ class ErrorTracker {
    * Get status information
    */
   getStatus() {
+    const isDsnConfigured = !!process.env.SENTRY_DSN;
     return {
-      enabled: this.isEnabled,
-      dsn: this.isEnabled ? 'configured' : 'not configured',
-      environment: process.env.NODE_ENV || 'development'
+      enabled: isDsnConfigured,
+      dsn: isDsnConfigured ? 'configured' : 'not configured', 
+      environment: process.env.NODE_ENV || 'development',
+      sentryInstance: !!this.sentryInstance
     };
   }
 
