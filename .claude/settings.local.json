@@ -18,7 +18,8 @@
       "Bash(npm run test:coverage:*)",
       "Bash(npm start)",
       "Bash(timeout 10 npm start)",
-      "Bash(set PORT=5001)"
+      "Bash(set PORT=5001)",
+      "Bash(npm test:*)"
     ],
     "deny": []
   }
