@@ -3,6 +3,12 @@
  * Configures test environment and utilities
  */
 
+// Set test environment variables before importing other modules
+process.env.NODE_ENV = 'test';
+process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
+process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+process.env.SENTRY_DSN = ''; // Disable Sentry in tests
+
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
