@@ -92,6 +92,7 @@ const login = async (req, res) => {
     
     const user = await User.findOne({ email });
     if (!user || !await bcrypt.compare(password, user.password)) {
+      logger.logAuth('login', user ? user.email : null, false, { reason: 'Invalid credentials' });
       errorTracker.trackAuth('login', email, false, { reason: 'Invalid credentials' });
       return res.status(401).json({ message: 'Invalid credentials' });
     }
