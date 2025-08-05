@@ -296,4 +296,141 @@ router.get('/recommendations', async (req, res) => {
   }
 });
 
+// Database optimization endpoints
+
+// Create optimized indexes
+router.post('/optimize/indexes', async (req, res) => {
+  try {
+    const result = await databaseOptimizer.createOptimizedIndexes();
+    
+    res.status(200).json({
+      ...result,
+      timestamp: new Date().toISOString(),
+      message: 'Database indexes optimized successfully'
+    });
+  } catch (error) {
+    logger.error('Database index optimization failed', { error: error.message });
+    res.status(500).json({
+      error: 'Failed to optimize database indexes',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Analyze existing indexes
+router.get('/analyze/indexes', async (req, res) => {
+  try {
+    const analysis = await databaseOptimizer.analyzeIndexes();
+    
+    res.status(200).json({
+      analysis,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Database index analysis failed', { error: error.message });
+    res.status(500).json({
+      error: 'Failed to analyze database indexes',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Get query optimization recommendations
+router.get('/optimize/recommendations', async (req, res) => {
+  try {
+    const recommendations = databaseOptimizer.getQueryOptimizationRecommendations();
+    
+    res.status(200).json({
+      recommendations,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Failed to get optimization recommendations', { error: error.message });
+    res.status(500).json({
+      error: 'Failed to get optimization recommendations',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Analyze slow queries
+router.get('/analyze/slow-queries', async (req, res) => {
+  try {
+    const analysis = await databaseOptimizer.optimizeSlowQueries();
+    
+    res.status(200).json({
+      ...analysis,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Slow query analysis failed', { error: error.message });
+    res.status(500).json({
+      error: 'Failed to analyze slow queries',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Performance report
+router.get('/performance-report', async (req, res) => {
+  try {
+    const report = databaseOptimizer.getPerformanceReport();
+    
+    res.status(200).json({
+      ...report,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Performance report generation failed', { error: error.message });
+    res.status(500).json({
+      error: 'Failed to generate performance report',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Run complete optimization
+router.post('/optimize/complete', async (req, res) => {
+  try {
+    const result = await databaseOptimizer.runCompleteOptimization();
+    
+    res.status(200).json({
+      ...result,
+      message: 'Complete database optimization finished successfully'
+    });
+  } catch (error) {
+    logger.error('Complete database optimization failed', { error: error.message });
+    res.status(500).json({
+      error: 'Failed to run complete database optimization',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Cleanup redundant indexes
+router.post('/optimize/cleanup', async (req, res) => {
+  try {
+    const result = await databaseOptimizer.cleanupIndexes();
+    
+    res.status(200).json({
+      ...result,
+      timestamp: new Date().toISOString(),
+      message: 'Index cleanup completed'
+    });
+  } catch (error) {
+    logger.error('Index cleanup failed', { error: error.message });
+    res.status(500).json({
+      error: 'Failed to cleanup indexes',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 module.exports = router;
