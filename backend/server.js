@@ -169,14 +169,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// MongoDB Connection
+// MongoDB Connection with optimized settings
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/boardroom_booking';
-logger.info('Attempting to connect to MongoDB...');
+const DatabaseMonitor = require('./src/utils/databaseMonitor');
+const connectionOptions = DatabaseMonitor.getOptimizedConnectionOptions();
 
-mongoose.connect(mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+logger.info('Attempting to connect to MongoDB with optimized settings...', {
+  uri: mongoUri.replace(/\/\/(.*):(.*)@/, '//*****:*****@'), // Hide credentials in logs
+  options: {
+    maxPoolSize: connectionOptions.maxPoolSize,
+    minPoolSize: connectionOptions.minPoolSize,
+    environment: process.env.NODE_ENV || 'development'
+  }
+});
+
+mongoose.connect(mongoUri, connectionOptions)
 .then(() => {
   logger.info('✅ Connected to MongoDB successfully');
   logger.info(`📊 Database: ${mongoUri.split('/').pop()}`);
