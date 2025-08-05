@@ -181,7 +181,9 @@ class ErrorTracker {
    * Capture a message with context
    */
   captureMessage(message, level = 'info', context = {}) {
-    logger[level]('Message captured', { message, context });
+    // Use appropriate logger method
+    const logMethod = logger[level] || logger.info;
+    logMethod('Message captured', { message, context });
 
     if (this.isEnabled) {
       this.sentryInstance.captureMessage(message, level, {
