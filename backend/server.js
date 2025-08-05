@@ -30,6 +30,7 @@ const boardroomRoutes = require('./src/routes/boardrooms');
 const bookingRoutes = require('./src/routes/bookings');
 const notificationRoutes = require('./src/routes/notifications');
 const userRoutes = require('./src/routes/users');
+const healthRoutes = require('./src/routes/health');
 
 const app = express();
 const server = http.createServer(app);
