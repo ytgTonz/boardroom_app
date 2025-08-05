@@ -49,7 +49,8 @@ describe('Authentication Controller', () => {
         name: 'Test User',
         email: 'test@example.com',
         password: await bcrypt.hash('password123', 12),
-        role: 'user'
+        role: 'user',
+        save: jest.fn().mockResolvedValue(true)
       };
 
       // Mock User.findOne to return the mock user
