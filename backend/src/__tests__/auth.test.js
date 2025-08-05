@@ -104,7 +104,7 @@ describe('Authentication Controller', () => {
 
       expect(response.status).toBe(401);
       expect(response.body.message).toBe('Invalid credentials');
-      expect(logger.logAuth).toHaveBeenCalledWith('login', 'user123', false, expect.any(Object));
+      expect(logger.logAuth).toHaveBeenCalledWith('login', 'test@example.com', false, expect.any(Object));
     });
 
     it('should handle missing credentials', async () => {
