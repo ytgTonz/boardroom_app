@@ -68,9 +68,9 @@ try {
       tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
       
       integrations: [
-        new Sentry.Integrations.Http({ tracing: true }),
-        new Sentry.Integrations.Express({ app: null }), // Will be set later
-        new Sentry.Integrations.Mongo({ useMongoose: true })
+        Sentry.httpIntegration({ tracing: true }),
+        Sentry.expressIntegration({ app: null }), // Will be set later
+        Sentry.mongoIntegration({ useMongoose: true })
       ],
       
       beforeSend(event) {
