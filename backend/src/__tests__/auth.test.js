@@ -123,16 +123,15 @@ describe('Authentication Controller', () => {
       User.findOne = jest.fn().mockResolvedValue(null);
       
       // Mock User constructor and save
-      const mockSave = jest.fn().mockResolvedValue({
+      const mockUser = {
         _id: 'newuser123',
         name: 'New User',
         email: 'newuser@example.com',
-        role: 'user'
-      });
+        role: 'user',
+        save: jest.fn().mockResolvedValue(true)
+      };
       
-      User.mockImplementation(() => ({
-        save: mockSave
-      }));
+      User.mockImplementation(() => mockUser);
 
       const response = await request(app)
         .post('/register')
