@@ -93,6 +93,8 @@ const AppContent = () => {
             <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
             <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
             <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
+            <Route path="/forgot-password" element={!user ? <ForgotPassword /> : <Navigate to="/" />} />
+            <Route path="/reset-password/:token" element={!user ? <ResetPassword /> : <Navigate to="/" />} />
             <Route path="/book" element={user ? <BookingForm /> : <Navigate to="/login" />} />
             <Route path="/my-bookings" element={user ? <MyBookings /> : <Navigate to="/login" />} />
             <Route path="/calendar" element={user ? <CalendarView /> : <Navigate to="/login" />} />
