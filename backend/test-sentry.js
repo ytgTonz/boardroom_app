@@ -3,6 +3,9 @@
  * Run this script to test if Sentry is working properly
  */
 
+// Load environment variables first
+require('dotenv').config();
+
 // IMPORTANT: Initialize Sentry FIRST, before any other requires
 require('./src/utils/instrument.js');
 
