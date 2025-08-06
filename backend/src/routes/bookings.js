@@ -27,6 +27,7 @@ router.patch('/:id/opt-out', authenticateToken, optOutOfBooking); // Opt-out rou
 router.put('/:id/cancel', authenticateToken, cancelBooking);
 // Public routes
 router.get('/availability/:id', getBoardroomAvailability);
+router.get('/detailed-availability/:boardroomId', getDetailedAvailability);
 
 // Admin routes
 router.get('/all', authenticateToken, requireAdmin, getAllBookings);
