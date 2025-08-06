@@ -297,6 +297,41 @@ const BookingForm: React.FC = () => {
     return boardrooms.find(room => room._id === formData.boardroom);
   };
 
+  const handleDateChange = (date: string) => {
+    setSelectedDate(date);
+    // Clear time selections when date changes
+    setFormData(prev => ({
+      ...prev,
+      startTime: '',
+      endTime: ''
+    }));
+    // Clear related errors
+    setErrors(prev => ({
+      ...prev,
+      startTime: '',
+      endTime: '',
+      date: ''
+    }));
+  };
+
+  const handleTimeSlotSelect = (startTime: string, endTime: string) => {
+    setFormData(prev => ({
+      ...prev,
+      startTime,
+      endTime
+    }));
+    // Clear time-related errors
+    setErrors(prev => ({
+      ...prev,
+      startTime: '',
+      endTime: ''
+    }));
+  };
+
+  const getTodayDate = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
   if (loading) {
     return (
       <div className="card">
