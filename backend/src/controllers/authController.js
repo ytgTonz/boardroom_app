@@ -43,7 +43,7 @@ const register = async (req, res) => {
     );
 
     // Track successful registration
-    //logger.logAuth('register', user._id.toString(), true, { email, name });
+    logger.logAuth('register', user._id.toString(), true, { email, name });
     errorTracker.trackAuth('register', user._id.toString(), true, { email, name });
     errorTracker.setUser({ id: user._id.toString(), email, name });
 
@@ -111,7 +111,7 @@ const login = async (req, res) => {
     );
 
     // Track successful login
-    logger.logAuth('login', user._id.toString(), true, { email, name: user.name });
+  //  logger.logAuth('login', user._id.toString(), true, { email, name: user.name });
     errorTracker.trackAuth('login', user._id.toString(), true, { email, name: user.name });
     errorTracker.setUser({ id: user._id.toString(), email, name: user.name });
 
