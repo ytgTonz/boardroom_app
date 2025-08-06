@@ -174,10 +174,12 @@ const BookingForm: React.FC = () => {
       const startTimeISO = new Date(formData.startTime).toISOString();
       const endTimeISO = new Date(formData.endTime).toISOString();
       
-      console.log('Frontend sending times:', { 
-        original: { start: formData.startTime, end: formData.endTime },
-        iso: { start: startTimeISO, end: endTimeISO }
-      });
+      console.log('=== FRONTEND DEBUGGING ===');
+      console.log('Frontend formData.startTime:', formData.startTime);
+      console.log('Frontend formData.endTime:', formData.endTime);
+      console.log('Frontend startTimeISO:', startTimeISO);
+      console.log('Frontend endTimeISO:', endTimeISO);
+      console.log('Current time for comparison:', new Date().toISOString());
       
       // Transform attendees data for backend
       const bookingData = {
