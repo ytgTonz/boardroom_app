@@ -79,6 +79,44 @@ if (import.meta.env.DEV) {
 const AppContent = () => {
   const { user, loading } = useAuth();
 
+  // Initialize PWA features
+  useEffect(() => {
+    // Register service worker
+    pwaInstallation.registerServiceWorker();
+
+    // Add manifest link if not present
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      manifestLink.href = '/manifest.json';
+      document.head.appendChild(manifestLink);
+    }
+
+    // Add theme color meta tag if not present
+    if (!document.querySelector('meta[name="theme-color"]')) {
+      const themeColorMeta = document.createElement('meta');
+      themeColorMeta.name = 'theme-color';
+      themeColorMeta.content = '#3b82f6';
+      document.head.appendChild(themeColorMeta);
+    }
+
+    // Add apple-mobile-web-app-capable for iOS
+    if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
+      const appleMeta = document.createElement('meta');
+      appleMeta.name = 'apple-mobile-web-app-capable';
+      appleMeta.content = 'yes';
+      document.head.appendChild(appleMeta);
+    }
+
+    // Add apple-mobile-web-app-status-bar-style for iOS
+    if (!document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')) {
+      const appleStatusMeta = document.createElement('meta');
+      appleStatusMeta.name = 'apple-mobile-web-app-status-bar-style';
+      appleStatusMeta.content = 'default';
+      document.head.appendChild(appleStatusMeta);
+    }
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
