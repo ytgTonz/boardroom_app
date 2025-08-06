@@ -120,6 +120,11 @@ const BookingForm: React.FC = () => {
         newErrors.startTime = 'Start time cannot be in the past';
       }
 
+      // Check same day booking
+      if (start.toDateString() !== end.toDateString()) {
+        newErrors.endTime = 'Booking cannot span multiple days';
+      }
+
       // Check working hours
       if (!isWithinWorkingHours(formData.startTime)) {
         newErrors.startTime = 'Start time must be between 07:00 and 16:00 (working hours)';
@@ -132,6 +137,12 @@ const BookingForm: React.FC = () => {
       // Check if booking spans outside working hours
       if (end.getHours() > 16 || (end.getHours() === 16 && end.getMinutes() > 0)) {
         newErrors.endTime = 'Booking must end by 16:00 (working hours)';
+      }
+
+      // Maximum booking duration (8 hours)
+      const durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      if (durationHours > 8) {
+        newErrors.endTime = 'Maximum booking duration is 8 hours';
       }
     }
 
@@ -325,6 +336,29 @@ const BookingForm: React.FC = () => {
     }));
   };
 
+  const checkTimeConflict = async (startTime: string, endTime: string) => {
+    if (!formData.boardroom || !startTime || !endTime) return;
+    
+    try {
+      const result = await bookingsAPI.checkAvailability(formData.boardroom, startTime, endTime);
+      if (!result.available && result.conflictingBooking) {
+        setErrors(prev => ({
+          ...prev,
+          startTime: `Time conflicts with "${result.conflictingBooking.purpose}" by ${result.conflictingBooking.organizer || 'another user'}`
+        }));
+      } else {
+        // Clear conflict errors
+        setErrors(prev => ({
+          ...prev,
+          startTime: prev.startTime?.includes('conflicts') ? '' : prev.startTime,
+          endTime: prev.endTime?.includes('conflicts') ? '' : prev.endTime
+        }));
+      }
+    } catch (error) {
+      console.error('Error checking availability:', error);
+    }
+  };
+
   const getTodayDate = () => {
     return new Date().toISOString().split('T')[0];
   };
@@ -461,6 +495,71 @@ const BookingForm: React.FC = () => {
                   {errors.endTime && <p>{errors.endTime}</p>}
                 </div>
               )}
+
+              {/* Manual Time Input Alternative */}
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
+                <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Or set precise times manually
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Start Time
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.startTime ? new Date(formData.startTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}
+                      onChange={async (e) => {
+                        if (e.target.value && selectedDate) {
+                          const dateTime = `${selectedDate}T${e.target.value}:00`;
+                          const startTimeISO = new Date(dateTime).toISOString();
+                          handleInputChange('startTime', startTimeISO);
+                          
+                          // Check for conflicts if end time is also set
+                          if (formData.endTime) {
+                            await checkTimeConflict(startTimeISO, formData.endTime);
+                          }
+                        }
+                      }}
+                      min="07:00"
+                      max="16:00"
+                      step="900"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      End Time
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.endTime ? new Date(formData.endTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''}
+                      onChange={async (e) => {
+                        if (e.target.value && selectedDate) {
+                          const dateTime = `${selectedDate}T${e.target.value}:00`;
+                          const endTimeISO = new Date(dateTime).toISOString();
+                          handleInputChange('endTime', endTimeISO);
+                          
+                          // Check for conflicts if start time is also set
+                          if (formData.startTime) {
+                            await checkTimeConflict(formData.startTime, endTimeISO);
+                          }
+                        }
+                      }}
+                      min="07:00"
+                      max="16:00"
+                      step="900"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <p className="mt-2 text-xs text-gray-500">
+                  Set any time within working hours (07:00-16:00) in 15-minute intervals
+                </p>
+              </div>
             </div>
           )}
 

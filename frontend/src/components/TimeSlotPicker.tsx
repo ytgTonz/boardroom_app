@@ -94,15 +94,9 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
       const lastSlot = selectedSlots[selectedSlots.length - 1];
       
       if (areConsecutiveSlots(lastSlot, slot)) {
-        // Add consecutive slot
+        // Add consecutive slot - allow unlimited selection
         const newSelection = [...selectedSlots, slot];
         setSelectedSlots(newSelection);
-        
-        // Auto-complete selection and notify parent
-        const startTime = newSelection[0].startTime;
-        const endTime = newSelection[newSelection.length - 1].endTime;
-        onTimeSlotSelect(startTime, endTime);
-        setIsSelecting(false);
       } else if (slot.startTime === selectedSlots[0].startTime) {
         // Clicked same starting slot - finish selection
         const startTime = selectedSlots[0].startTime;
@@ -203,7 +197,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
           <Clock className="w-5 h-5 text-blue-600 mr-2 mt-0.5" />
           <div className="text-sm text-blue-800">
             <p className="font-medium">How to select time:</p>
-            <p>Click on a green (available) slot to start, then click consecutive slots to extend your booking. Minimum 30 minutes required.</p>
+            <p>Click on a green (available) slot to start, then click consecutive slots to extend your booking. Click "Confirm Selection" when ready. Minimum 30 minutes required.</p>
           </div>
         </div>
       </div>
@@ -275,14 +269,29 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
       {selectedSlots.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-2">Selected Time:</h4>
-          <div className="flex items-center text-blue-800">
-            <Clock className="w-4 h-4 mr-2" />
-            <span>
-              {formatTime(selectedSlots[0].startTime)} - {formatTime(selectedSlots[selectedSlots.length - 1].endTime)}
-            </span>
-            <span className="ml-2 text-sm opacity-75">
-              ({selectedSlots.length * 30} minutes)
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center text-blue-800">
+              <Clock className="w-4 h-4 mr-2" />
+              <span>
+                {formatTime(selectedSlots[0].startTime)} - {formatTime(selectedSlots[selectedSlots.length - 1].endTime)}
+              </span>
+              <span className="ml-2 text-sm opacity-75">
+                ({selectedSlots.length * 30} minutes)
+              </span>
+            </div>
+            {isSelecting && (
+              <button
+                onClick={() => {
+                  const startTime = selectedSlots[0].startTime;
+                  const endTime = selectedSlots[selectedSlots.length - 1].endTime;
+                  onTimeSlotSelect(startTime, endTime);
+                  setIsSelecting(false);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+              >
+                Confirm Selection
+              </button>
+            )}
           </div>
         </div>
       )}
