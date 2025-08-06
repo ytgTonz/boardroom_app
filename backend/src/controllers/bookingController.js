@@ -934,6 +934,7 @@ module.exports = {
   adminCancelBooking,
   adminDeleteBooking,
   getBoardroomAvailability,
+  getDetailedAvailability,
   getAllBookings,
   optOutOfBooking
 };
