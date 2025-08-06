@@ -97,6 +97,10 @@ const Header: React.FC = () => {
                 <Calendar className="w-4 h-4" />
                 <span>Calendar</span>
               </Link>
+              <Link to="/profile" className="flex items-center space-x-2 text-gray-600 hover:text-primary-600">
+                <User className="w-4 h-4" />
+                <span>Profile</span>
+              </Link>
               {user?.role === 'admin' && (
                 <div className="relative group">
                   <Link to="/admin" className="flex items-center space-x-2 text-gray-600 hover:text-primary-600">
@@ -236,6 +240,14 @@ const Header: React.FC = () => {
                   >
                     <Calendar className="w-5 h-5" />
                     <span>Calendar</span>
+                  </Link>
+                  <Link
+                    to="/profile"
+                    onClick={closeMobileMenu}
+                    className="flex items-center space-x-3 text-gray-600 hover:text-primary-600 py-2"
+                  >
+                    <User className="w-5 h-5" />
+                    <span>Profile</span>
                   </Link>
                   {user?.role === 'admin' && (
                     <>

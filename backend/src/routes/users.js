@@ -1,9 +1,118 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Booking = require('../models/Booking');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Get current user profile
+router.get('/profile', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ message: 'Failed to fetch user profile' });
+  }
+});
+
+// Update current user profile
+router.put('/profile', authenticateToken, async (req, res) => {
+  try {
+    const { name, email, phone, department, position, location } = req.body;
+    
+    // Validation
+    if (!name || !email) {
+      return res.status(400).json({ message: 'Name and email are required' });
+    }
+
+    // Check if email is already taken by another user
+    const existingUser = await User.findOne({ 
+      email: email.toLowerCase(), 
+      _id: { $ne: req.user.userId } 
+    });
+    
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email is already taken by another user' });
+    }
+
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update user fields
+    user.name = name.trim();
+    user.email = email.toLowerCase().trim();
+    user.phone = phone?.trim() || user.phone;
+    user.department = department?.trim() || user.department;
+    user.position = position?.trim() || user.position;
+    user.location = location?.trim() || user.location;
+
+    await user.save();
+
+    // Return user without password
+    const updatedUser = user.toObject();
+    delete updatedUser.password;
+
+    res.json({ 
+      message: 'Profile updated successfully',
+      user: updatedUser 
+    });
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    res.status(500).json({ message: 'Failed to update user profile' });
+  }
+});
+
+// Get user booking statistics
+router.get('/profile/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const now = new Date();
+
+    // Get total bookings
+    const totalBookings = await Booking.countDocuments({ 
+      user: userId 
+    });
+
+    // Get upcoming bookings
+    const upcomingBookings = await Booking.countDocuments({ 
+      user: userId,
+      date: { $gte: now },
+      status: { $nin: ['cancelled'] }
+    });
+
+    // Get completed bookings
+    const completedBookings = await Booking.countDocuments({ 
+      user: userId,
+      date: { $lt: now },
+      status: 'confirmed'
+    });
+
+    // Get last booking date
+    const lastBooking = await Booking.findOne(
+      { user: userId },
+      { date: 1 },
+      { sort: { createdAt: -1 } }
+    );
+
+    res.json({
+      totalBookings,
+      upcomingBookings,
+      completedBookings,
+      lastBookingDate: lastBooking?.date || null
+    });
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    res.status(500).json({ message: 'Failed to fetch user statistics' });
+  }
+});
 
 // Get all users (authenticated users)
 router.get('/', authenticateToken, async (req, res) => {

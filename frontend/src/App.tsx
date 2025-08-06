@@ -20,6 +20,9 @@ import AdminUsers from './components/AdminUsers';
 import AdminBookings from './components/AdminBookings';
 import AdminDashboard from './components/AdminDashboard';
 import ErrorBoundary from './components/ErrorBoundary';
+import NotFoundPage from './components/NotFoundPage';
+import ErrorPage from './components/ErrorPage';
+import UserProfile from './components/UserProfile';
 import { useAuth } from './contexts/AuthContext';
 
 // Set up axios defaults from environment variable
@@ -91,6 +94,7 @@ const AppContent = () => {
             <Route path="/book" element={user ? <BookingForm /> : <Navigate to="/login" />} />
             <Route path="/my-bookings" element={user ? <MyBookings /> : <Navigate to="/login" />} />
             <Route path="/calendar" element={user ? <CalendarView /> : <Navigate to="/login" />} />
+            <Route path="/profile" element={user ? <UserProfile /> : <Navigate to="/login" />} />
             <Route path="/boardrooms" element={<BoardroomList />} />
             <Route path="/admin" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
             <Route path="/admin/dashboard" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} />
@@ -98,6 +102,10 @@ const AppContent = () => {
             <Route path="/admin/bookings" element={user?.role === 'admin' ? <AdminBookings /> : <Navigate to="/" />} />
             <Route path="/admin/booking" element={<Navigate to="/admin/bookings" replace />} />
             <Route path="/admin/users" element={user?.role === 'admin' ? <AdminUsers /> : <Navigate to="/" />} />
+            {/* Error Pages */}
+            <Route path="/error" element={<ErrorPage />} />
+            {/* 404 Catch-all - Must be last */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
         {/* ToastContainer for react-toastify */}
