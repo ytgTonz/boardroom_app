@@ -68,6 +68,7 @@ const UserProfile: React.FC = () => {
       };
       setProfileData(userData);
       setOriginalData(userData);
+      setIsInitialLoading(false);
     }
   }, [user]);
 
@@ -164,6 +165,10 @@ const UserProfile: React.FC = () => {
       day: 'numeric'
     });
   };
+
+  if (isInitialLoading) {
+    return <ProfileSkeleton />;
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
