@@ -5,6 +5,7 @@ import { bookingsAPI, boardroomsAPI } from '../services/api';
 import { Booking, Boardroom } from '../types';
 import MiniCalendar from './MiniCalendar';
 import { useSocket } from '../hooks/useSocket';
+import { DashboardSkeleton } from './LoadingSkeleton';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
