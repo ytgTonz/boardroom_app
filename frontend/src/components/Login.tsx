@@ -64,36 +64,30 @@ const Login: React.FC = () => {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="input mt-1"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="input mt-1"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-              />
-            </div>
+            <FormField
+              label="Email address"
+              name="email"
+              type="email"
+              required
+              disabled={loading}
+              error={getFieldError('email')}
+              placeholder="Enter your email address"
+              autoComplete="email"
+              {...getFieldProps('email')}
+            />
+            
+            <FormField
+              label="Password"
+              name="password"
+              type="password"
+              required
+              disabled={loading}
+              error={getFieldError('password')}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              helpText="Minimum 6 characters required"
+              {...getFieldProps('password')}
+            />
           </div>
 
           {error && (
@@ -105,7 +99,7 @@ const Login: React.FC = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !isValid}
               className="btn btn-primary w-full disabled:opacity-50"
             >
               {loading ? 'Signing in...' : 'Sign in'}
