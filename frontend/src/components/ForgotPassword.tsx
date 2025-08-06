@@ -40,7 +40,7 @@ const ForgotPassword: React.FC = () => {
 
     try {
       await api.post('/auth/forgot-password', { 
-        email: email.toLowerCase().trim() 
+        email: values.email.toLowerCase().trim() 
       });
 
       setIsSubmitted(true);
@@ -94,7 +94,7 @@ const ForgotPassword: React.FC = () => {
             
             <p className="text-gray-600 mb-8">
               We've sent password reset instructions to{' '}
-              <span className="font-medium text-gray-900">{email}</span>
+              <span className="font-medium text-gray-900">{values.email}</span>
             </p>
 
             <div className="space-y-4">
@@ -167,48 +167,24 @@ const ForgotPassword: React.FC = () => {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="email" className="sr-only">
-              Email address
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={email}
-                onChange={handleEmailChange}
-                required
-                className={`block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
-                  errors.email 
-                    ? 'border-red-300 bg-red-50' 
-                    : 'border-gray-300'
-                }`}
-                placeholder="Enter your email address"
-                aria-invalid={errors.email ? 'true' : 'false'}
-                aria-describedby={errors.email ? 'email-error' : undefined}
-              />
-            </div>
-            
-            {errors.email && (
-              <div
-                id="email-error"
-                className="mt-2 flex items-center text-sm text-red-600"
-                role="alert"
-              >
-                <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                <span>{errors.email}</span>
-              </div>
-            )}
-          </div>
+          <FormField
+            label="Email address"
+            name="email"
+            type="email"
+            required
+            disabled={isLoading}
+            error={getFieldError('email')}
+            placeholder="Enter your email address"
+            autoComplete="email"
+            className="[&>label]:sr-only"
+            helpText="We'll send password reset instructions to this email"
+            {...getFieldProps('email')}
+          />
 
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !isValid}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
