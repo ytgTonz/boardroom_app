@@ -5,19 +5,44 @@ import { useFormValidation, validationRules } from '../hooks/useFormValidation';
 import FormField from './FormField';
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
 
+  const {
+    values,
+    errors,
+    isValid,
+    getFieldProps,
+    getFieldError,
+    validateForm
+  } = useFormValidation({
+    email: {
+      ...validationRules.required(),
+      ...validationRules.email()
+    },
+    password: {
+      ...validationRules.required('Password is required'),
+      ...validationRules.minLength(6, 'Password must be at least 6 characters')
+    }
+  }, {
+    validateOnChange: true,
+    validateOnBlur: true,
+    debounceMs: 300
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
     setError('');
     
     try {
-      await login(email, password);
+      await login(values.email, values.password);
     } catch (error: any) {
       console.error('Login error:', error);
       setError(error.message || 'Login failed');
