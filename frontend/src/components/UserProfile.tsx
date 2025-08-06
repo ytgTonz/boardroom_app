@@ -14,7 +14,8 @@ import {
   MapPin
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import api from '../services/api';
+import { usersAPI } from '../services/api';
+import { api } from '../services/api';
 import { errorTracker } from '../utils/sentryConfig';
 
 interface UserProfileData {
@@ -75,7 +76,7 @@ const UserProfile: React.FC = () => {
 
   const fetchUserStats = async () => {
     try {
-      const response = await api.get('/users/profile/stats');
+      const response = await usersAPI.getStats();
       setUserStats(response.data);
     } catch (error) {
       console.error('Error fetching user stats:', error);
