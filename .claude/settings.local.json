@@ -20,7 +20,8 @@
       "Bash(timeout 10 npm start)",
       "Bash(set PORT=5001)",
       "Bash(npm test:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }
