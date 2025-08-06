@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Profile API</title>
+</head>
+<body>
+    <h1>Test Profile API</h1>
+    <div id="result"></div>
+    
+    <script>
+        // Test the profile API endpoints
+        async function testProfileAPI() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                // Test the profile stats endpoint
+                const response = await fetch('http://localhost:5000/api/users/profile/stats', {
+                    headers: {
+                        'Authorization': 'Bearer YOUR_TOKEN_HERE',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <h2>Profile Stats API Working!</h2>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h2>API Response (${response.status})</h2>
+                        <pre>${await response.text()}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h2>Error Testing API</h2>
+                    <pre>${error.message}</pre>
+                    <p>Make sure the backend is running on http://localhost:5000</p>
+                `;
+            }
+        }
+        
+        // Run test on page load
+        testProfileAPI();
+    </script>
+</body>
+</html>
