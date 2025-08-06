@@ -16,7 +16,7 @@ console.log('🧪 Testing Sentry Integration...\n');
 
 // Test 1: Check Sentry status
 console.log('1. Checking Sentry configuration:');
-console.log('   Sentry DSN configured:', !!process.env.SENTRY_DSN || 'using hardcoded DSN');
+console.log('   Sentry DSN configured:', !!process.env.SENTRY_DSN);
 console.log('   Environment:', process.env.NODE_ENV || 'development');
 
 // Test 2: Test message capture
