@@ -45,8 +45,30 @@ const Login: React.FC = () => {
     try {
       await login(values.email, values.password);
     } catch (error: any) {
-      console.error('Login error:', error);
-      setError(error.message || 'Login failed');
+      // Enhanced error handling with contextual messages
+      const serverMessage = error.response?.data?.message || '';
+      let contextualMessage;
+      
+      if (error.response?.status === 401) {
+        if (serverMessage?.includes('credentials')) {
+          contextualMessage = contextualErrorMessages.auth.invalidCredentials;
+        } else if (serverMessage?.includes('locked')) {
+          contextualMessage = contextualErrorMessages.auth.accountLocked;
+        } else if (serverMessage?.includes('verified')) {
+          contextualMessage = contextualErrorMessages.auth.emailNotVerified;
+        } else {
+          contextualMessage = contextualErrorMessages.auth.invalidCredentials;
+        }
+      } else if (error.response?.status === 404) {
+        contextualMessage = contextualErrorMessages.auth.accountNotFound;
+      }
+      
+      if (contextualMessage) {
+        setError(contextualMessage);
+      } else {
+        errorHandlers.auth(error, 'login');
+        setError('Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
