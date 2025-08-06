@@ -152,7 +152,7 @@ io.on('connection', (socket) => {
 app.set('io', io);
 
 // Sentry request handler (must be first middleware)
-app.use(errorTracker.getExpressRequestHandler());
+app.use(Sentry.setupExpressRequestHandler());
 
 // Middleware
 app.use(express.json());

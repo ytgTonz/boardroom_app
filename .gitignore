@@ -111,4 +111,7 @@ Thumbs.db
 *.bak
 *.backup
 
+# Sentry files
 *.instrument.js
+*.sentryConfig.js
+*.test-sentry.js
