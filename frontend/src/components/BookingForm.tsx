@@ -5,6 +5,7 @@ import { Boardroom, BookingFormData, User, AttendeeOption } from '../types';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
 import BookingConflictModal from './BookingConflictModal';
+import TimeSlotPicker from './TimeSlotPicker';
 import { errorHandlers, contextualErrorMessages } from '../utils/errorHandler';
 
 const BookingForm: React.FC = () => {
@@ -25,6 +26,7 @@ const BookingForm: React.FC = () => {
   const [externalEmail, setExternalEmail] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [users, setUsers] = useState<User[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>('');
 
   useEffect(() => {
     const fetchBoardrooms = async () => {
