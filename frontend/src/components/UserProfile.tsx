@@ -16,6 +16,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { api }  from '../services/api';
 import { errorTracker } from '../utils/sentryConfig';
+import { ProfileSkeleton } from './LoadingSkeleton';
 
 interface UserProfileData {
   name: string;
@@ -37,6 +38,7 @@ const UserProfile: React.FC = () => {
   const { user, updateUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [userStats, setUserStats] = useState<UserStats>({
     totalBookings: 0,
     upcomingBookings: 0,
