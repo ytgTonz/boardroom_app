@@ -131,7 +131,7 @@ const login = async (req, res) => {
       extra: { email: req.body.email }
     });
 
-    logger.error('Login error:', error);
+   // logger.error('Login error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
