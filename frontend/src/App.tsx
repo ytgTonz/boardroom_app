@@ -23,6 +23,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import NotFoundPage from './components/NotFoundPage';
 import ErrorPage from './components/ErrorPage';
 import UserProfile from './components/UserProfile';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import { useAuth } from './contexts/AuthContext';
 
 // Set up axios defaults from environment variable
