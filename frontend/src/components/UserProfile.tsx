@@ -77,7 +77,7 @@ const UserProfile: React.FC = () => {
     try {
       const response = await api.get('/users/profile/stats');
       console.log("response data:", response);
-      setUserStats(response.data);
+      setUserStats(response);
     } catch (error) {
       console.error('Error fetching user stats:', error);
       errorTracker.captureException(error as Error, {
