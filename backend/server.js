@@ -151,8 +151,7 @@ io.on('connection', (socket) => {
 // Make io available to routes
 app.set('io', io);
 
-// Sentry request handler (must be first middleware)
-app.use(Sentry.setupExpressRequestHandler());
+// Sentry is initialized in instrument.js
 
 // Middleware
 app.use(express.json());
