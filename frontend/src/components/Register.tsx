@@ -61,7 +61,29 @@ const Register: React.FC = () => {
       console.log('Registration successful');
     } catch (error: any) {
       console.error('Registration error:', error);
-      setError(error.message || 'Registration failed');
+      
+      // Enhanced error handling
+      const serverMessage = error.response?.data?.message || '';
+      let contextualMessage;
+      
+      if (error.response?.status === 409) {
+        contextualMessage = 'An account with this email address already exists. Please try logging in instead.';
+      } else if (error.response?.status === 400) {
+        if (serverMessage?.includes('email')) {
+          contextualMessage = 'Please provide a valid email address.';
+        } else if (serverMessage?.includes('password')) {
+          contextualMessage = 'Password must be at least 6 characters and contain both letters and numbers.';
+        } else if (serverMessage?.includes('name')) {
+          contextualMessage = 'Please provide a valid name (at least 2 characters).';
+        } else {
+          contextualMessage = serverMessage || 'Please check your input and try again.';
+        }
+      } else {
+        errorHandlers.auth(error, 'register');
+        contextualMessage = 'Registration failed. Please try again.';
+      }
+      
+      setError(contextualMessage);
     } finally {
       setLoading(false);
     }
