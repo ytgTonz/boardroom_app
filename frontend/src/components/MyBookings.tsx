@@ -71,6 +71,8 @@ const MyBookings: React.FC = () => {
       await bookingsAPI.cancel(bookingId);
       // Refresh bookings
       const updatedBookings = await bookingsAPI.getMyBookings();
+      console.log('=== BOOKINGS AFTER CANCEL ===');
+      console.log('Updated bookings:', updatedBookings);
       setBookings(updatedBookings);
       alert('Booking cancelled successfully!');
     } catch (error: any) {
