@@ -197,7 +197,12 @@ const BookingForm: React.FC = () => {
           external: formData.attendees.filter(a => a.type === 'external').map(a => a.email!)
         }
       };
-      await bookingsAPI.create(bookingData);
+      
+      console.log('About to send booking request with data:', bookingData);
+      
+      const result = await bookingsAPI.create(bookingData);
+      console.log('Booking API response:', result);
+      
       toast.success('Booking created successfully!');
       
       // Redirect to My Bookings page
