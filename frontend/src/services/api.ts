@@ -268,6 +268,34 @@ export const bookingsAPI = {
     });
     return handleResponse(response);
   },
+
+  // Availability checking functions
+  getDetailedAvailability: async (boardroomId: string, date?: string, startTime?: string, endTime?: string) => {
+    const params = new URLSearchParams();
+    if (date) params.append('date', date);
+    if (startTime) params.append('startTime', startTime);
+    if (endTime) params.append('endTime', endTime);
+    
+    let url = `${API_BASE_URL}/bookings/detailed-availability/${boardroomId}`;
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
+    const response = await fetch(url, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  checkAvailability: async (boardroomId: string, startTime: string, endTime: string) => {
+    const response = await fetch(
+      `${API_BASE_URL}/bookings/detailed-availability/${boardroomId}?startTime=${startTime}&endTime=${endTime}`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
+    return handleResponse(response);
+  },
 }; 
 
 // Users API
