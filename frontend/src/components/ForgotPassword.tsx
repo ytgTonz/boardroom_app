@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Mail, ArrowLeft, Check, AlertCircle } from 'lucide-react';
-import api from '../services/api';
+import { api } from '../services/api';
 import { errorTracker } from '../utils/sentryConfig';
 
 const ForgotPassword: React.FC = () => {
