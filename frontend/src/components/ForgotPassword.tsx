@@ -8,46 +8,35 @@ import { useFormValidation, validationRules } from '../hooks/useFormValidation';
 import FormField from './FormField';
 
 const ForgotPassword: React.FC = () => {
-  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [errors, setErrors] = useState<{email?: string}>({});
 
-  const validateEmail = (email: string) => {
-    if (!email.trim()) {
-      return 'Email is required';
+  const {
+    values,
+    errors,
+    isValid,
+    getFieldProps,
+    getFieldError,
+    validateForm
+  } = useFormValidation({
+    email: {
+      ...validationRules.required('Email address is required'),
+      ...validationRules.email('Please enter a valid email address')
     }
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return 'Please enter a valid email address';
-    }
-    
-    return null;
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newEmail = e.target.value;
-    setEmail(newEmail);
-    
-    // Clear email error if user starts typing
-    if (errors.email) {
-      setErrors(prev => ({ ...prev, email: undefined }));
-    }
-  };
+  }, {
+    validateOnChange: true,
+    validateOnBlur: true,
+    debounceMs: 300
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate email
-    const emailError = validateEmail(email);
-    if (emailError) {
-      setErrors({ email: emailError });
+    if (!validateForm()) {
       return;
     }
 
     setIsLoading(true);
-    setErrors({});
 
     try {
       await api.post('/auth/forgot-password', { 
