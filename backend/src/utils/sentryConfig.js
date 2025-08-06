@@ -329,7 +329,14 @@ class ErrorTracker {
    * Create Express middleware for error handling
    */
   getExpressErrorHandler() {
-    return this.sentryInstance.setupExpressErrorHandler();
+    if (this.isEnabled && this.sentryInstance.setupExpressErrorHandler) {
+      return this.sentryInstance.setupExpressErrorHandler();
+    }
+    
+    // Fallback error handler
+    return (err, req, res, next) => {
+      next(err);
+    };
   }
 
   /**
