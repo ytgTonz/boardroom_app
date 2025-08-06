@@ -17,7 +17,7 @@ try {
     
     // Configure Sentry with profiling
     Sentry.init({
-      dsn: process.env.SENTRY_DSN,
+      dsn: process.env.SENTRY_DSN || 'https://f71d2481c104235ea6901bda44f6708d@o4509745689919488.ingest.us.sentry.io/4509791706742784',
       environment: process.env.NODE_ENV || 'development',
       
       // Performance monitoring
