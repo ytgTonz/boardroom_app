@@ -65,14 +65,12 @@ Sentry.setContext('test_info', {
 
 // Test 7: Test transaction (performance monitoring)
 console.log('\n7. Testing performance transaction...');
-const transaction = Sentry.startTransaction({ name: 'test-operation', op: 'test' });
-Sentry.getCurrentHub().configureScope(scope => scope.setSpan(transaction));
-
-setTimeout(() => {
-  transaction.setTag('test', 'performance');
-  transaction.setData('duration', '1.5s');
-  transaction.finish();
-}, 100);
+Sentry.withScope((scope) => {
+  const span = Sentry.startInactiveSpan({ name: 'test-operation', op: 'test' });
+  span.setTag('test', 'performance');
+  span.setData('duration', '1.5s');
+  span.end();
+});
 
 // Test 8: Test auth failure scenario
 console.log('\n8. Testing auth failure scenario...');
