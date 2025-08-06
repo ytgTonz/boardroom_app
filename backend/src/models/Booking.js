@@ -66,6 +66,35 @@ const bookingSchema = new mongoose.Schema({
   }
 });
 
+// Add pre-save hook to debug the startTime issue
+bookingSchema.pre('save', function(next) {
+  console.log('🔍 MONGOOSE PRE-SAVE HOOK - BOOKING MODEL');
+  console.log('Document about to be saved:', {
+    _id: this._id,
+    purpose: this.purpose,
+    startTime: this.startTime,
+    endTime: this.endTime,
+    user: this.user,
+    isNew: this.isNew
+  });
+  
+  // Check if startTime is suspiciously close to current time
+  const now = new Date();
+  const timeDiff = Math.abs(this.startTime.getTime() - now.getTime()) / (1000 * 60);
+  
+  if (timeDiff < 1) {
+    console.log('🚨 MONGOOSE: startTime is very close to current time!');
+    console.log('startTime:', this.startTime.toISOString());
+    console.log('currentTime:', now.toISOString());
+    console.log('Difference (minutes):', timeDiff);
+    
+    // Print stack trace to see where this is being called from
+    console.log('Stack trace:', new Error().stack);
+  }
+  
+  next();
+});
+
 // Optimized indexes for performance
 bookingSchema.index({ boardroom: 1, startTime: 1, endTime: 1 }, { name: 'booking_room_time_range' });
 bookingSchema.index({ user: 1, createdAt: -1 }, { name: 'booking_user_created' });
