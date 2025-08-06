@@ -2,7 +2,7 @@
 
 // IMPORTANT: Initialize Sentry FIRST, before any other requires
 require('./src/utils/instrument.js');
-const Sentry = require('@sentry/node');
+const errorTracker = require('./src/utils/sentryConfig');
 
 const express = require('express');
 const http = require('http');
@@ -279,7 +279,7 @@ app.get('/', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   // Track error with Sentry
-  Sentry.captureException(err, {
+  errorTracker.captureException(err, {
     tags: {
       component: 'express_error_handler'
     },
@@ -295,7 +295,7 @@ app.use((err, req, res, next) => {
 });
 
 // Sentry error handler must be registered before any other error middleware and after all controllers
-Sentry.setupExpressErrorHandler(app);
+app.use(errorTracker.getExpressErrorHandler());
 
 // 404 handler
 app.use('*', (req, res) => {
