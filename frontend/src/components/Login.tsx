@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useFormValidation, validationRules } from '../hooks/useFormValidation';
+import FormField from './FormField';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
