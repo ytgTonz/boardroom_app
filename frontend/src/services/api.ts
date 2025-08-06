@@ -278,8 +278,16 @@ export const api = {
     });
     return handleResponse(response);
   },
+
+  put: async (url: string, data: any) => {
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+  },
 };
-  
+
 // Users API
 export const usersAPI = {
   getAll: async () => {
