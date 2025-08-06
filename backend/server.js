@@ -1,5 +1,8 @@
 // backend/server.js (UPDATED WITH EMAIL)
 
+console.log('🚀🚀🚀 BACKEND SERVER STARTING - TIMESTAMP:', new Date().toISOString());
+console.log('🚀🚀🚀 THIS CONFIRMS WE ARE USING THE RIGHT SERVER FILE');
+
 // IMPORTANT: Initialize Sentry FIRST, before any other requires
 require('./src/utils/instrument.js');
 const Sentry = require('@sentry/node');
