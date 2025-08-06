@@ -184,7 +184,44 @@ const BookingForm: React.FC = () => {
       // Redirect to My Bookings page
       navigate('/my-bookings');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create booking');
+      console.error('Booking creation error:', error);
+      
+      // Enhanced error handling with specific messages
+      let errorMessage = 'Failed to create booking';
+      
+      if (error.response?.status === 409) {
+        errorMessage = 'Time slot conflict: Another booking already exists for this time period';
+      } else if (error.response?.status === 400) {
+        const serverMessage = error.response?.data?.message;
+        if (serverMessage?.includes('working hours')) {
+          errorMessage = 'Booking must be within working hours (7:00 AM - 4:00 PM)';
+        } else if (serverMessage?.includes('minimum duration')) {
+          errorMessage = 'Booking must be at least 30 minutes long';
+        } else if (serverMessage?.includes('boardroom')) {
+          errorMessage = 'Selected boardroom is not available or does not exist';
+        } else if (serverMessage?.includes('attendees')) {
+          errorMessage = 'One or more attendees could not be added to the booking';
+        } else {
+          errorMessage = serverMessage || errorMessage;
+        }
+      } else if (error.response?.status === 401) {
+        errorMessage = 'You are not authorized to create bookings. Please log in again';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'You do not have permission to book this boardroom';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Selected boardroom was not found or has been deleted';
+      } else if (error.response?.status >= 500) {
+        errorMessage = 'Server error occurred. Please try again or contact support';
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        errorMessage = 'Network error: Please check your connection and try again';
+      }
+      
+      toast.error(errorMessage);
+      
+      // Log detailed error for debugging
+      if (error.response?.data) {
+        console.error('Server error details:', error.response.data);
+      }
     } finally {
       setSubmitting(false);
     }
