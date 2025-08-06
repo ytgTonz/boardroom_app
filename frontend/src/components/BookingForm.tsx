@@ -325,6 +325,12 @@ const BookingForm: React.FC = () => {
   };
 
   const handleTimeSlotSelect = (startTime: string, endTime: string) => {
+    console.log('=== TIMESLOT SELECTION ===');
+    console.log('Selected startTime:', startTime);
+    console.log('Selected endTime:', endTime);
+    console.log('Type of startTime:', typeof startTime);
+    console.log('Current time:', new Date().toISOString());
+    
     setFormData(prev => ({
       ...prev,
       startTime,
