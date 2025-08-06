@@ -72,7 +72,8 @@ class DatabaseMonitor {
   }
 
   setupQueryMonitoring() {
-    // Monitor slow queries using Mongoose middleware
+    // Save reference to the DatabaseMonitor instance
+    const monitor = this;
     mongoose.plugin((schema) => {
       schema.pre(/^find/, function() {
         this.startTime = Date.now();
@@ -80,7 +81,7 @@ class DatabaseMonitor {
 
       schema.post(/^find/, function(result) {
         const duration = Date.now() - this.startTime;
-        recordQuery(duration);
+        monitor.recordQuery(duration); // Use the captured reference
       });
 
       schema.pre('save', function() {
@@ -89,7 +90,7 @@ class DatabaseMonitor {
 
       schema.post('save', function() {
         const duration = Date.now() - this.startTime;
-        recordQuery(duration);
+        monitor.recordQuery(duration);
       });
 
       schema.pre('updateOne', function() {
@@ -98,7 +99,7 @@ class DatabaseMonitor {
 
       schema.post('updateOne', function() {
         const duration = Date.now() - this.startTime;
-        recordQuery(duration);
+        monitor.recordQuery(duration);
       });
 
       schema.pre('deleteOne', function() {
@@ -107,7 +108,7 @@ class DatabaseMonitor {
 
       schema.post('deleteOne', function() {
         const duration = Date.now() - this.startTime;
-        recordQuery(duration);
+        monitor.recordQuery(duration);
       });
     });
   }
