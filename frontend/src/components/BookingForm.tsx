@@ -60,12 +60,6 @@ const BookingForm: React.FC = () => {
     fetchUsers();
   }, [location.state]);
 
-  // Set minimum date to today
-  const getMinDate = () => {
-    const today = new Date();
-    today.setHours(today.getHours() + 1); // Minimum 1 hour from now
-    return today.toISOString().slice(0, 16);
-  };
 
   // Check if time is within working hours (07:00 - 16:00)
   const isWithinWorkingHours = (timeString: string) => {
