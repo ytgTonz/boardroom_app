@@ -25,7 +25,10 @@ import ErrorPage from './components/ErrorPage';
 import UserProfile from './components/UserProfile';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import OfflineStatus from './components/OfflineStatus';
 import { useAuth } from './contexts/AuthContext';
+import { pwaInstallation } from './utils/pwaUtils';
 
 // Set up axios defaults from environment variable
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
