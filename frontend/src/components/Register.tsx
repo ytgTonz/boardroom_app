@@ -1,51 +1,62 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useFormValidation, validationRules } from '../hooks/useFormValidation';
+import FormField from './FormField';
 
 const Register: React.FC = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { register } = useAuth();
 
+  const {
+    values,
+    errors,
+    isValid,
+    getFieldProps,
+    getFieldError,
+    validateForm
+  } = useFormValidation({
+    name: {
+      ...validationRules.required('Full name is required'),
+      ...validationRules.minLength(2, 'Name must be at least 2 characters')
+    },
+    email: {
+      ...validationRules.required(),
+      ...validationRules.email()
+    },
+    password: {
+      ...validationRules.required('Password is required'),
+      ...validationRules.password()
+    },
+    confirmPassword: {
+      ...validationRules.required('Please confirm your password'),
+      custom: (value: string) => {
+        if (value !== values.password) {
+          return 'Passwords do not match';
+        }
+        return null;
+      }
+    }
+  }, {
+    validateOnChange: true,
+    validateOnBlur: true,
+    debounceMs: 300
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
     setError('');
     
-    // Basic client-side validation
-    if (!name.trim()) {
-      setError('Name is required');
-      setLoading(false);
-      return;
-    }
-    
-    if (!email.trim()) {
-      setError('Email is required');
-      setLoading(false);
-      return;
-    }
-    
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      setLoading(false);
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
-    
     try {
-      console.log('Attempting registration with:', { name, email, password: '***' });
-      await register(name, email, password);
+      console.log('Attempting registration with:', { name: values.name, email: values.email, password: '***' });
+      await register(values.name, values.email, values.password);
       console.log('Registration successful');
     } catch (error: any) {
       console.error('Registration error:', error);
