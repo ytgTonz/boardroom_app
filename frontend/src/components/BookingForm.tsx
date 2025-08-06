@@ -102,12 +102,16 @@ const BookingForm: React.FC = () => {
       newErrors.boardroom = 'Please select a boardroom';
     }
 
+    if (!selectedDate) {
+      newErrors.date = 'Please select a date';
+    }
+
     if (!formData.startTime) {
-      newErrors.startTime = 'Please select a start time';
+      newErrors.startTime = 'Please select a time slot';
     }
 
     if (!formData.endTime) {
-      newErrors.endTime = 'Please select an end time';
+      newErrors.endTime = 'Please select a time slot';
     }
 
     if (formData.startTime && formData.endTime) {
@@ -141,8 +145,7 @@ const BookingForm: React.FC = () => {
       newErrors.purpose = 'Please enter a purpose for the meeting';
     }
 
-    if (!isMinimumBookingTime(formData.startTime, formData.endTime)) {
-      newErrors.endTime = 'Booking must be at least 30 minutes long';
+    if (formData.startTime && formData.endTime && !isMinimumBookingTime(formData.startTime, formData.endTime)) {
       newErrors.startTime = 'Booking must be at least 30 minutes long';
     }
 
