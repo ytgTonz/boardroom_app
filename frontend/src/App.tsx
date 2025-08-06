@@ -129,6 +129,13 @@ const AppContent = () => {
     <Router>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
+        
+        {/* PWA Install Prompt - Show only for authenticated users */}
+        {user && <PWAInstallPrompt className="mx-4 mb-4" />}
+        
+        {/* Offline Status Indicator */}
+        <OfflineStatus />
+        
         <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
           <Routes>
             <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
