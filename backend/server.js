@@ -1,4 +1,9 @@
 // backend/server.js (UPDATED WITH EMAIL)
+
+// IMPORTANT: Initialize Sentry FIRST, before any other requires
+require('./src/utils/instrument.js');
+const Sentry = require('@sentry/node');
+
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -8,9 +13,6 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
-
-// Initialize Sentry error tracking (must be first)
-const errorTracker = require('./src/utils/sentryConfig');
 
 // Initialize structured logging
 const logger = require('./src/utils/logger');
