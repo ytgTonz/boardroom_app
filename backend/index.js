@@ -15,6 +15,10 @@ app.get("/", function rootHandler(req, res) {
   res.end("Hello world!");
 });
 
+app.get("/debug-sentry", function mainHandler(req, res) {
+    throw new Error("My first Sentry error!");
+  });
+
 // The error handler must be registered before any other error middleware and after all controllers
 Sentry.setupExpressErrorHandler(app);
 
@@ -26,4 +30,4 @@ app.use(function onError(err, req, res, next) {
   res.end(res.sentry + "\n");
 });
 
-app.listen(3001);
+app.listen(3000);
