@@ -1,5 +1,13 @@
 const express = require('express');
-const { register, login, getProfile, getAllUsers } = require('../controllers/authController');
+const { 
+  register, 
+  login, 
+  getProfile, 
+  getAllUsers,
+  forgotPassword,
+  validateResetToken,
+  resetPassword
+} = require('../controllers/authController');
 const { validateRegistration, validateLogin } = require('../middleware/validation');
 const { authenticateToken } = require('../middleware/auth');
 
