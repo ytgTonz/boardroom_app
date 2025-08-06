@@ -297,6 +297,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Something went wrong!' });
 });
 
+// Sentry error handler must be registered before any other error middleware and after all controllers
+Sentry.setupExpressErrorHandler(app);
+
 // 404 handler
 app.use('*', (req, res) => {
   logger.info(`❌ Route not found: ${req.method} ${req.originalUrl}`);
