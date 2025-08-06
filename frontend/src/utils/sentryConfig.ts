@@ -29,247 +29,206 @@ interface ErrorContext {
 }
 
 let Sentry: any = null;
+let isInitialized = false;
 
-// Try to import Sentry if available
-try {
-  const SentryReact = require('@sentry/react');
-  const SentryBrowser = require('@sentry/browser');
+// Initialize Sentry asynchronously
+const initializeSentry = async () => {
+  if (isInitialized) return Sentry;
   
-  Sentry = { ...SentryReact, ...SentryBrowser };
-  
-  // Initialize Sentry
-  Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-    environment: import.meta.env.VITE_ENVIRONMENT || 'development',
-    
-    // Performance monitoring
-    tracesSampleRate: import.meta.env.VITE_ENVIRONMENT === 'production' ? 0.1 : 1.0,
-    
-    // React integration
-    integrations: [
-      new Sentry.BrowserTracing({
-        // Capture interactions like clicks, navigation
-        routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-          // We'll need to pass React Router history here if using React Router
-        ),
-      }),
-      new Sentry.Replay({
-        // Capture 10% of sessions for replay in production
-        sessionSampleRate: import.meta.env.VITE_ENVIRONMENT === 'production' ? 0.1 : 1.0,
-        // Capture 100% of sessions with errors for replay
-        errorSampleRate: 1.0,
-      }),
-    ],
-    
-    // Filter out noise
-    beforeSend(event) {
-      // Don't send cancelled requests
-      if (event.exception?.values?.[0]?.type === 'AbortError') {
-        return null;
-      }
-      
-      // Don't send network errors in development
-      if (import.meta.env.VITE_NODE_ENV === 'development' && 
-          event.exception?.values?.[0]?.type === 'TypeError' &&
-          event.exception?.values?.[0]?.value?.includes('fetch')) {
-        return null;
-      }
-      
-      return event;
-    },
-    
-    // Initial scope
-    initialScope: {
-      tags: {
-        component: 'boardroom-booking-frontend',
-        version: import.meta.env.VITE_APP_VERSION || '1.0.0'
-      }
+  try {
+    // Check if Sentry packages are available
+    const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
+    if (!sentryDsn) {
+      console.warn('⚠️ Sentry DSN not configured, using mock implementation');
+      return null;
     }
-  });
-  
-  console.log('✅ Sentry initialized for frontend');
-} catch (error) {
-  // Sentry not available - create mock implementation
-  console.warn('⚠️ Sentry not available, using mock implementation', {
-    error: (error as Error).message,
-    suggestion: 'Run: npm install @sentry/react @sentry/browser'
-  });
-  
-  Sentry = {
-    captureException: (error: Error, context?: ErrorContext) => {
-      console.error('Sentry Mock - Exception captured', { error: error.message, context });
-    },
-    captureMessage: (message: string, level?: string, context?: ErrorContext) => {
-      console.log('Sentry Mock - Message captured', { message, level, context });
-    },
-    addBreadcrumb: (breadcrumb: any) => {
-      console.debug('Sentry Mock - Breadcrumb added', breadcrumb);
-    },
-    setUser: (user: User) => {
-      console.debug('Sentry Mock - User set', user);
-    },
-    setTag: (key: string, value: string) => {
-      console.debug('Sentry Mock - Tag set', { key, value });
-    },
-    setContext: (key: string, context: any) => {
-      console.debug('Sentry Mock - Context set', { key, context });
-    },
-    ErrorBoundary: ({ children, fallback }: { children: React.ReactNode; fallback?: React.ComponentType<any> }) => children,
-    withErrorBoundary: (component: React.ComponentType, options?: any) => component,
-    startTransaction: (context: any) => ({
-      setStatus: () => {},
-      setTag: () => {},
-      setData: () => {},
-      finish: () => {},
-      child: () => ({
-        setStatus: () => {},
-        setTag: () => {},
-        setData: () => {},
-        finish: () => {}
-      })
-    })
-  };
-}
+
+    // Try to dynamically import Sentry
+    const SentryModule = await import('@sentry/react');
+    Sentry = SentryModule;
+    
+    // Initialize Sentry
+    Sentry.init({
+      dsn: sentryDsn,
+      environment: import.meta.env.VITE_ENVIRONMENT || 'development',
+      
+      // Performance monitoring
+      tracesSampleRate: import.meta.env.VITE_ENVIRONMENT === 'production' ? 0.1 : 1.0,
+      
+      // React integration with error boundary
+      integrations: [
+        new Sentry.BrowserTracing(),
+        new Sentry.Replay({
+          maskAllText: false,
+          blockAllMedia: false,
+        }),
+      ],
+      
+      // Filter out unnecessary events
+      beforeSend(event: any) {
+        // Don't send events in development unless explicitly enabled
+        if (import.meta.env.VITE_ENVIRONMENT === 'development' && !import.meta.env.VITE_SENTRY_DEBUG) {
+          return null;
+        }
+        
+        // Filter out network errors and other noise
+        if (event.exception?.values?.[0]?.type === 'NetworkError') {
+          return null;
+        }
+        
+        return event;
+      },
+      
+      // Tag all events with app info
+      initialScope: {
+        tags: {
+          app: 'boardroom-booking-frontend',
+          version: import.meta.env.VITE_APP_VERSION || '1.0.0'
+        }
+      }
+    });
+    
+    isInitialized = true;
+    console.log('✅ Sentry initialized successfully');
+    return Sentry;
+  } catch (error) {
+    console.warn('⚠️ Sentry not available, using mock implementation', {
+      error: (error as Error).message,
+      suggestion: 'Run: npm install @sentry/react @sentry/browser'
+    });
+    return null;
+  }
+};
+
+// Mock Sentry implementation for when Sentry is not available
+const mockSentry = {
+  init: () => {},
+  captureException: (error: Error, context?: ErrorContext) => {
+    console.error('Sentry Mock - Exception captured', { 
+      error: error.message, 
+      stack: error.stack,
+      context 
+    });
+  },
+  captureMessage: (message: string, level: string = 'info', context?: ErrorContext) => {
+    console.log('Sentry Mock - Message captured', { message, level, context });
+  },
+  addBreadcrumb: (breadcrumb: any) => {
+    console.debug('Sentry Mock - Breadcrumb added', breadcrumb);
+  },
+  setUser: (user: User) => {
+    console.debug('Sentry Mock - User set', user);
+  },
+  setTag: (key: string, value: string) => {
+    console.debug('Sentry Mock - Tag set', { key, value });
+  },
+  setContext: (key: string, context: any) => {
+    console.debug('Sentry Mock - Context set', { key, context });
+  },
+  withScope: (callback: (scope: any) => void) => {
+    const mockScope = {
+      setTag: (key: string, value: string) => console.debug('Mock scope tag:', { key, value }),
+      setUser: (user: User) => console.debug('Mock scope user:', user),
+      setContext: (key: string, context: any) => console.debug('Mock scope context:', { key, context }),
+      addBreadcrumb: (breadcrumb: any) => console.debug('Mock scope breadcrumb:', breadcrumb)
+    };
+    callback(mockScope);
+  },
+  ErrorBoundary: ({ children, fallback }: { children: React.ReactNode; fallback?: React.ComponentType }) => children,
+  getCurrentHub: () => ({
+    getScope: () => mockSentry
+  })
+};
 
 /**
- * Enhanced error tracking utility for React
+ * Enhanced error tracking utility
  */
-class FrontendErrorTracker {
-  private isEnabled: boolean;
-  private sentryInstance: any;
+class ErrorTracker {
+  private sentryInstance: any = null;
+  private isReady = false;
 
   constructor() {
-    this.isEnabled = !!import.meta.env.VITE_SENTRY_DSN;
-    this.sentryInstance = Sentry;
+    this.initializeAsync();
+  }
+
+  private async initializeAsync() {
+    this.sentryInstance = await initializeSentry() || mockSentry;
+    this.isReady = true;
+  }
+
+  private async ensureReady() {
+    if (!this.isReady) {
+      await this.initializeAsync();
+    }
+    return this.sentryInstance || mockSentry;
   }
 
   /**
    * Capture and log an exception
    */
-  captureException(error: Error, context: ErrorContext = {}) {
-    // Always log to console in development
-    if (import.meta.env.VITE_NODE_ENV === 'development') {
-      console.error('Exception captured', {
-        error: error.message,
-        stack: error.stack,
-        context
-      });
-    }
+  async captureException(error: Error, context: ErrorContext = {}) {
+    const sentry = await this.ensureReady();
+    
+    // Always log to console for development
+    console.error('Exception captured:', {
+      error: error.message,
+      stack: error.stack,
+      context
+    });
 
-    // Send to Sentry if configured
-    if (this.isEnabled) {
-      this.sentryInstance.captureException(error, {
-        tags: context.tags,
-        user: context.user,
-        extra: context.extra,
-        level: context.level || 'error'
-      });
-    }
+    sentry.captureException(error, context);
   }
 
   /**
    * Capture a message with context
    */
-  captureMessage(message: string, level: 'error' | 'warning' | 'info' | 'debug' = 'info', context: ErrorContext = {}) {
-    if (import.meta.env.VITE_NODE_ENV === 'development') {
-      console[level]('Message captured', { message, context });
-    }
-
-    if (this.isEnabled) {
-      this.sentryInstance.captureMessage(message, level, {
-        tags: context.tags,
-        user: context.user,
-        extra: context.extra
-      });
-    }
+  async captureMessage(message: string, level: string = 'info', context: ErrorContext = {}) {
+    const sentry = await this.ensureReady();
+    
+    console.log('Message captured:', { message, level, context });
+    sentry.captureMessage(message, level, context);
   }
 
   /**
    * Add breadcrumb for debugging
    */
-  addBreadcrumb(breadcrumb: {
-    category?: string;
-    message: string;
-    level?: 'error' | 'warning' | 'info' | 'debug';
-    data?: Record<string, any>;
-  }) {
-    if (import.meta.env.VITE_NODE_ENV === 'development') {
-      console.debug('Breadcrumb added', breadcrumb);
-    }
-
-    if (this.isEnabled) {
-      this.sentryInstance.addBreadcrumb(breadcrumb);
-    }
+  async addBreadcrumb(breadcrumb: any) {
+    const sentry = await this.ensureReady();
+    sentry.addBreadcrumb(breadcrumb);
   }
 
   /**
    * Set user context
    */
-  setUser(user: User) {
-    if (this.isEnabled) {
-      this.sentryInstance.setUser(user);
-    }
+  async setUser(user: User) {
+    const sentry = await this.ensureReady();
+    sentry.setUser(user);
   }
 
   /**
    * Add custom context
    */
-  setContext(key: string, context: any) {
-    if (this.isEnabled) {
-      this.sentryInstance.setContext(key, context);
-    }
-  }
-
-  /**
-   * Track authentication events
-   */
-  trackAuth(event: string, userId?: string, success: boolean = true, details: Record<string, any> = {}) {
-    const breadcrumb = {
-      category: 'auth',
-      message: `Authentication ${event}: ${success ? 'success' : 'failure'}`,
-      level: success ? 'info' as const : 'warning' as const,
-      data: {
-        userId,
-        event,
-        success,
-        ...details
-      }
-    };
-
-    this.addBreadcrumb(breadcrumb);
-
-    if (!success) {
-      this.captureMessage(`Authentication failure: ${event}`, 'warning', {
-        tags: { event_type: 'auth_failure' },
-        extra: { userId, event, ...details }
-      });
-    }
-  }
-
-  /**
-   * Track booking events
-   */
-  trackBooking(event: string, userId?: string, bookingId?: string, details: Record<string, any> = {}) {
-    const breadcrumb = {
-      category: 'booking',
-      message: `Booking ${event}`,
-      level: 'info' as const,
-      data: {
-        userId,
-        bookingId,
-        event,
-        ...details
-      }
-    };
-
-    this.addBreadcrumb(breadcrumb);
+  async setContext(key: string, context: any) {
+    const sentry = await this.ensureReady();
+    sentry.setContext(key, context);
   }
 
   /**
    * Track API errors
    */
-  trackApiError(endpoint: string, error: Error, details: Record<string, any> = {}) {
-    this.captureException(error, {
+  async trackApiError(endpoint: string, error: Error, details: any = {}) {
+    await this.addBreadcrumb({
+      category: 'api',
+      message: `API Error: ${endpoint}`,
+      level: 'error',
+      data: {
+        endpoint,
+        error: error.message,
+        ...details
+      }
+    });
+
+    await this.captureException(error, {
       tags: {
         event_type: 'api_error',
         endpoint
@@ -279,69 +238,27 @@ class FrontendErrorTracker {
   }
 
   /**
-   * Track navigation events
+   * Track authentication events
    */
-  trackNavigation(from: string, to: string) {
-    this.addBreadcrumb({
-      category: 'navigation',
-      message: `Navigated from ${from} to ${to}`,
-      level: 'info',
-      data: { from, to }
-    });
-  }
-
-  /**
-   * Track form validation errors
-   */
-  trackValidationError(formName: string, field: string, error: string) {
-    this.addBreadcrumb({
-      category: 'validation',
-      message: `Validation error in ${formName}: ${field}`,
-      level: 'warning',
-      data: { formName, field, error }
-    });
-  }
-
-  /**
-   * Track React component errors
-   */
-  trackReactError(error: Error, errorInfo: ErrorInfo, componentName?: string) {
-    this.captureException(error, {
-      tags: {
-        event_type: 'react_error',
-        component: componentName || 'unknown'
-      },
-      extra: {
-        componentStack: errorInfo.componentStack,
-        errorBoundary: true
+  async trackAuth(event: string, userId: string | null, success: boolean, details: any = {}) {
+    await this.addBreadcrumb({
+      category: 'auth',
+      message: `Authentication ${event}: ${success ? 'success' : 'failure'}`,
+      level: success ? 'info' : 'warning',
+      data: {
+        userId,
+        event,
+        success,
+        ...details
       }
     });
-  }
 
-  /**
-   * Get Sentry Error Boundary component
-   */
-  getErrorBoundary() {
-    return this.sentryInstance.ErrorBoundary;
-  }
-
-  /**
-   * Wrap component with error boundary
-   */
-  withErrorBoundary<P>(
-    component: React.ComponentType<P>, 
-    options?: {
-      fallback?: React.ComponentType<any>;
-      beforeCapture?: (error: Error, errorInfo: ErrorInfo) => void;
-    }
-  ) {
-    if (this.isEnabled) {
-      return this.sentryInstance.withErrorBoundary(component, {
-        fallback: options?.fallback,
-        beforeCapture: options?.beforeCapture
+    if (!success) {
+      await this.captureMessage(`Authentication failure: ${event}`, 'warning', {
+        tags: { event_type: 'auth_failure' },
+        extra: { userId, event, ...details }
       });
     }
-    return component;
   }
 
   /**
@@ -349,36 +266,45 @@ class FrontendErrorTracker {
    */
   getStatus() {
     return {
-      enabled: this.isEnabled,
-      dsn: this.isEnabled ? 'configured' : 'not configured',
-      environment: import.meta.env.VITE_NODE_ENV || 'development'
+      enabled: isInitialized && !!Sentry,
+      dsn: import.meta.env.VITE_SENTRY_DSN ? 'configured' : 'not configured',
+      environment: import.meta.env.VITE_ENVIRONMENT || 'development',
+      ready: this.isReady
     };
   }
 
   /**
-   * Start a performance transaction
+   * React Error Boundary component
    */
-  startTransaction(name: string, op: string = 'navigation') {
-    if (this.isEnabled) {
-      return this.sentryInstance.startTransaction({ name, op });
-    }
-    
-    // Mock transaction
-    return {
-      setStatus: () => {},
-      setTag: () => {},
-      setData: () => {},
-      finish: () => {},
-      child: (childName: string) => this.startTransaction(childName, 'child')
-    };
+  get ErrorBoundary() {
+    return this.sentryInstance?.ErrorBoundary || mockSentry.ErrorBoundary;
+  }
+
+  /**
+   * Capture React error boundary errors
+   */
+  async captureReactError(error: Error, errorInfo: ErrorInfo, componentStack?: string) {
+    await this.captureException(error, {
+      tags: {
+        event_type: 'react_error_boundary'
+      },
+      extra: {
+        componentStack: errorInfo.componentStack || componentStack,
+        errorBoundary: true
+      }
+    });
   }
 }
 
 // Export singleton instance
-export const errorTracker = new FrontendErrorTracker();
+export const errorTracker = new ErrorTracker();
 
-// Export Sentry components for direct use
-export const SentryErrorBoundary = Sentry.ErrorBoundary;
-export const withSentryErrorBoundary = Sentry.withErrorBoundary;
+// Also export the class for advanced usage
+export { ErrorTracker };
+
+// Initialize Sentry and export for direct usage if needed
+export const getSentryInstance = async () => {
+  return await initializeSentry() || mockSentry;
+};
 
 export default errorTracker;
