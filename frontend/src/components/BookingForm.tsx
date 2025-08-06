@@ -5,6 +5,7 @@ import { Boardroom, BookingFormData, User, AttendeeOption } from '../types';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
 import BookingConflictModal from './BookingConflictModal';
+import { errorHandlers, contextualErrorMessages } from '../utils/errorHandler';
 
 const BookingForm: React.FC = () => {
   const location = useLocation();
