@@ -20,7 +20,7 @@ const register = async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      logger.logAuth('register', null, false, { email, reason: 'User already exists' });
+     // logger.logAuth('register', null, false, { email, reason: 'User already exists' });
       errorTracker.trackAuth('register', email, false, { reason: 'User already exists' });
       return res.status(400).json({ message: 'User already exists' });
     }
