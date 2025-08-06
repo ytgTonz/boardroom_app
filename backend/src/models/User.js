@@ -60,5 +60,6 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ email: 1 }, { unique: true, name: 'user_email_unique' });
 userSchema.index({ role: 1, createdAt: -1 }, { name: 'user_role_created' });
 userSchema.index({ lastLogin: -1 }, { name: 'user_last_login' });
+userSchema.index({ resetPasswordToken: 1 }, { sparse: true, name: 'user_reset_token' });
 
 module.exports = mongoose.model('User', userSchema); 
