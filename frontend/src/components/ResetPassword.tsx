@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
-import api from '../services/api';
+import { api } from '../services/api';
 import { errorTracker } from '../utils/sentryConfig';
 
 const ResetPassword: React.FC = () => {
