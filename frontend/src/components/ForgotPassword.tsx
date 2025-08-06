@@ -4,6 +4,8 @@ import { toast } from 'react-toastify';
 import { Mail, ArrowLeft, Check, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
 import { errorTracker } from '../utils/sentryConfig';
+import { useFormValidation, validationRules } from '../hooks/useFormValidation';
+import FormField from './FormField';
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
