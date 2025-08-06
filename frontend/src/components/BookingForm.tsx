@@ -163,9 +163,15 @@ const BookingForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('=== FORM SUBMISSION STARTED ===');
+    console.log('Form validation result:', validateForm());
+    
     if (!validateForm()) {
+      console.log('Form validation failed, stopping submission');
       return;
     }
+    
+    console.log('Form validation passed, proceeding with submission');
     setSubmitting(true);
     try {
       // Convert datetime-local to ISO string for backend
