@@ -16,12 +16,13 @@ console.log('🧪 Testing Sentry Integration...\n');
 
 // Test 1: Check Sentry status
 console.log('1. Checking Sentry configuration:');
-const status = errorTracker.getStatus();
-console.log('   Status:', status);
+console.log('   Sentry DSN configured:', !!process.env.SENTRY_DSN || 'using hardcoded DSN');
+console.log('   Environment:', process.env.NODE_ENV || 'development');
 
 // Test 2: Test message capture
 console.log('\n2. Testing message capture...');
-errorTracker.captureMessage('Test message from Sentry integration test', 'info', {
+Sentry.captureMessage('Test message from Sentry integration test', {
+  level: 'info',
   tags: { test: 'integration' },
   extra: { timestamp: new Date().toISOString() }
 });
@@ -31,7 +32,7 @@ console.log('\n3. Testing exception capture...');
 try {
   throw new Error('Test error for Sentry integration');
 } catch (error) {
-  errorTracker.captureException(error, {
+  Sentry.captureException(error, {
     tags: { test: 'integration', error_type: 'test' },
     extra: { context: 'integration_test' }
   });
@@ -39,38 +40,75 @@ try {
 
 // Test 4: Test breadcrumbs
 console.log('\n4. Testing breadcrumb tracking...');
-errorTracker.addBreadcrumb({
+Sentry.addBreadcrumb({
   category: 'test',
   message: 'Integration test breadcrumb',
   level: 'info',
   data: { test: true }
 });
 
-// Test 5: Test auth tracking
-console.log('\n5. Testing auth event tracking...');
-errorTracker.trackAuth('test_login', 'test_user_123', true, {
-  method: 'integration_test'
+// Test 5: Set user context
+console.log('\n5. Testing user context...');
+Sentry.setUser({
+  id: 'test_user_123',
+  email: 'test@example.com',
+  username: 'testuser'
 });
 
-// Test 6: Test auth failure tracking  
-console.log('\n6. Testing auth failure tracking...');
-errorTracker.trackAuth('test_login', 'test_user_456', false, {
-  reason: 'integration_test_failure',
-  method: 'test'
+// Test 6: Test tags and context
+console.log('\n6. Testing tags and context...');
+Sentry.setTag('test_type', 'integration');
+Sentry.setContext('test_info', {
+  test_run: new Date().toISOString(),
+  version: '1.0.0'
 });
 
-// Test 7: Test performance tracking
-console.log('\n7. Testing performance tracking...');
-errorTracker.trackPerformance('test_operation', 1500, {
-  operation_type: 'integration_test'
+// Test 7: Test transaction (performance monitoring)
+console.log('\n7. Testing performance transaction...');
+const transaction = Sentry.startTransaction({ name: 'test-operation', op: 'test' });
+Sentry.getCurrentHub().configureScope(scope => scope.setSpan(transaction));
+
+setTimeout(() => {
+  transaction.setTag('test', 'performance');
+  transaction.setData('duration', '1.5s');
+  transaction.finish();
+}, 100);
+
+// Test 8: Test auth failure scenario
+console.log('\n8. Testing auth failure scenario...');
+Sentry.addBreadcrumb({
+  category: 'auth',
+  message: 'User attempted login',
+  level: 'info',
+  data: { email: 'test@example.com' }
 });
 
-// Test 8: Test database error tracking
-console.log('\n8. Testing database error tracking...');
-const testDbError = new Error('Test database connection error');
-errorTracker.trackDatabaseError('test_connection', testDbError, {
-  database: 'test_db',
-  operation: 'integration_test'
+const authError = new Error('Authentication failed: Invalid credentials');
+Sentry.captureException(authError, {
+  tags: { 
+    event_type: 'auth_failure',
+    operation: 'login'
+  },
+  extra: { 
+    email: 'test@example.com',
+    reason: 'invalid_password',
+    timestamp: new Date().toISOString()
+  }
+});
+
+// Test 9: Test database error scenario  
+console.log('\n9. Testing database error scenario...');
+const dbError = new Error('Database connection timeout');
+Sentry.captureException(dbError, {
+  tags: {
+    event_type: 'database_error',
+    operation: 'connection'
+  },
+  extra: {
+    database: 'mongodb',
+    timeout: '5000ms',
+    retry_count: 3
+  }
 });
 
 console.log('\n✅ Sentry integration test completed!');
