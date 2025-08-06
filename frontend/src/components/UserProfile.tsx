@@ -114,7 +114,7 @@ const UserProfile: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await usersAPI.updateRole(user?.id || '', profileData || '');
+      const response = await usersAPI.updateRole(user?._id || '', 'profileData');
       
       // Update the auth context with new user data
       updateUser(response.data.user);
