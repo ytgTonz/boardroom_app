@@ -277,12 +277,10 @@ app.get('/', (req, res) => {
 });
 
 // Sentry error handler (must be before other error handlers)
-app.use(errorTracker.getExpressErrorHandler());
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   // Track error with Sentry
-  errorTracker.captureException(err, {
+  Sentry.captureException(err, {
     tags: {
       component: 'express_error_handler'
     },
