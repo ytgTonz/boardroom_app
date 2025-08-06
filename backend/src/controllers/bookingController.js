@@ -130,6 +130,11 @@ const createBooking = async (req, res) => {
     
     await booking.save();
     
+    console.log("🚨 AFTER SAVE - What was actually saved:");
+    console.log("Saved booking startTime:", booking.startTime.toISOString());
+    console.log("Saved booking endTime:", booking.endTime.toISOString());
+    console.log("Saved booking createdAt:", booking.createdAt.toISOString());
+    
     // Get full user details for email notifications
     const organizer = await User.findById(req.user.userId);
     const attendeeUsers = await User.find({ _id: { $in: allUserAttendees } });
