@@ -110,8 +110,18 @@ const createBooking = async (req, res) => {
       : [...userAttendees, req.user.userId];
     
     // Convert times to UTC to ensure consistent storage
+    console.log('📅 About to convert startTime:', startTime, 'Type:', typeof startTime);
+    if (!startTime) {
+      console.log('🚨 ERROR: startTime is undefined/null/empty!');
+      return res.status(400).json({ message: 'startTime is required' });
+    }
+    
     const startTimeUTC = new Date(startTime);
     const endTimeUTC = new Date(endTime);
+    
+    console.log('📅 After conversion:');
+    console.log('startTimeUTC:', startTimeUTC);
+    console.log('startTimeUTC.toISOString():', startTimeUTC.toISOString());
     
     console.log("=== DEBUGGING BOOKING CREATION ===");
     console.log("Original start time from frontend:", startTime);
