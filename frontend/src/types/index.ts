@@ -97,3 +97,27 @@ export interface UserStats {
   regularUsers: number;
   recentUsers: User[];
 }
+
+export interface TimeSlot {
+  startTime: string;
+  endTime: string;
+  available: boolean;
+  conflictingBooking?: {
+    purpose: string;
+    organizer: string;
+    startTime: string;
+    endTime: string;
+  } | null;
+}
+
+export interface DetailedAvailability {
+  boardroom: {
+    _id: string;
+    name: string;
+    location: string;
+    capacity: number;
+  };
+  date: string;
+  timeSlots: TimeSlot[];
+  totalBookings: number;
+}
