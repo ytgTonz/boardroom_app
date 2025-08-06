@@ -159,12 +159,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     toast.success('Logged out successfully');
   };
 
+  const updateUser = (userData: any) => {
+    // Extract user data from API response
+    const apiUser = userData.data?.user || userData.user || userData;
+    
+    // Map API response to our expected User format
+    const userForContext: User = {
+      _id: apiUser._id || apiUser.id,
+      name: apiUser.name,
+      email: apiUser.email,
+      role: apiUser.role
+    };
+    
+    // Update localStorage (keep API format for compatibility)
+    localStorage.setItem('user', JSON.stringify(apiUser));
+    
+    // Update local state
+    setUser(userForContext);
+    
+    // Update Redux store
+    dispatch(setReduxUser({
+      _id: userForContext._id,
+      name: userForContext.name,
+      email: userForContext.email,
+      role: userForContext.role
+    }));
+  };
+
   const value = {
     user,
     loading,
     login,
     register,
-    logout
+    logout,
+    updateUser
   };
 
   return (
