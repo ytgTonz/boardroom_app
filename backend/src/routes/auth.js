@@ -16,6 +16,9 @@ const router = express.Router();
 // Public routes
 router.post('/register', validateRegistration, register);
 router.post('/login', validateLogin, login);
+router.post('/forgot-password', forgotPassword);
+router.post('/validate-reset-token', validateResetToken);
+router.post('/reset-password', resetPassword);
 
 // Protected routes
 router.get('/profile', authenticateToken, getProfile);
