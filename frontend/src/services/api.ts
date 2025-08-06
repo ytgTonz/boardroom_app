@@ -271,6 +271,16 @@ export const bookingsAPI = {
 }; 
 
 // Users API
+export const api = {
+  get: async (url: string) => {
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+};
+  
+// Users API
 export const usersAPI = {
   getAll: async () => {
     const response = await fetch(`${API_BASE_URL}/users`, {
