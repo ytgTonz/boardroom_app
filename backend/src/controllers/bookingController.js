@@ -414,6 +414,133 @@ const getBoardroomAvailability = async (req, res) => {
   }
 };
 
+// New enhanced availability endpoint for real-time slot checking
+const getDetailedAvailability = async (req, res) => {
+  try {
+    const { boardroomId } = req.params;
+    const { date, startTime, endTime } = req.query;
+    
+    if (!boardroomId) {
+      return res.status(400).json({ message: 'Boardroom ID is required' });
+    }
+    
+    // Validate boardroom exists and is active
+    const boardroom = await Boardroom.findOne({ _id: boardroomId, isActive: true });
+    if (!boardroom) {
+      return res.status(404).json({ message: 'Boardroom not found or inactive' });
+    }
+    
+    let queryDate = date ? new Date(date) : new Date();
+    const startOfDay = new Date(queryDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(queryDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    // Get all confirmed bookings for the specified date/boardroom
+    const bookings = await Booking.find({
+      boardroom: boardroomId,
+      status: 'confirmed',
+      $or: [
+        { 
+          startTime: { $gte: startOfDay, $lte: endOfDay } 
+        },
+        { 
+          endTime: { $gte: startOfDay, $lte: endOfDay }
+        },
+        {
+          startTime: { $lt: startOfDay },
+          endTime: { $gt: endOfDay }
+        }
+      ]
+    }).sort({ startTime: 1 })
+      .populate('user', 'name')
+      .select('startTime endTime purpose user');
+    
+    // If specific time range is provided, check availability for that slot
+    if (startTime && endTime) {
+      const requestedStart = new Date(startTime);
+      const requestedEnd = new Date(endTime);
+      
+      const conflict = bookings.find(booking => {
+        const bookingStart = new Date(booking.startTime);
+        const bookingEnd = new Date(booking.endTime);
+        
+        return (
+          (requestedStart < bookingEnd && requestedEnd > bookingStart)
+        );
+      });
+      
+      return res.json({
+        available: !conflict,
+        conflictingBooking: conflict || null,
+        allBookings: bookings
+      });
+    }
+    
+    // Generate time slots for the entire working day (7:00 AM - 4:00 PM)
+    const timeSlots = [];
+    const workingHourStart = 7; // 7:00 AM
+    const workingHourEnd = 16; // 4:00 PM
+    const slotDuration = 30; // 30 minutes
+    
+    for (let hour = workingHourStart; hour < workingHourEnd; hour++) {
+      for (let minute = 0; minute < 60; minute += slotDuration) {
+        const slotStart = new Date(queryDate);
+        slotStart.setHours(hour, minute, 0, 0);
+        const slotEnd = new Date(slotStart);
+        slotEnd.setMinutes(slotEnd.getMinutes() + slotDuration);
+        
+        // Skip if slot extends beyond working hours
+        if (slotEnd.getHours() >= workingHourEnd) {
+          break;
+        }
+        
+        // Skip if slot is in the past
+        if (slotStart < new Date()) {
+          continue;
+        }
+        
+        // Check if slot conflicts with any booking
+        const conflictingBooking = bookings.find(booking => {
+          const bookingStart = new Date(booking.startTime);
+          const bookingEnd = new Date(booking.endTime);
+          
+          return (
+            (slotStart < bookingEnd && slotEnd > bookingStart)
+          );
+        });
+        
+        timeSlots.push({
+          startTime: slotStart.toISOString(),
+          endTime: slotEnd.toISOString(),
+          available: !conflictingBooking,
+          conflictingBooking: conflictingBooking ? {
+            purpose: conflictingBooking.purpose,
+            organizer: conflictingBooking.user.name,
+            startTime: conflictingBooking.startTime,
+            endTime: conflictingBooking.endTime
+          } : null
+        });
+      }
+    }
+    
+    res.json({
+      boardroom: {
+        _id: boardroom._id,
+        name: boardroom.name,
+        location: boardroom.location,
+        capacity: boardroom.capacity
+      },
+      date: queryDate.toISOString().split('T')[0],
+      timeSlots,
+      totalBookings: bookings.length
+    });
+  } catch (error) {
+    console.error('Get detailed availability error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const getAllBookings = async (req, res) => {
   try {
     console.log('getAllBookings called by user:', req.user.userId);
