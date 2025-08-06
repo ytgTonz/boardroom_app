@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - Boardroom Booking App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    
+    .offline-container {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      padding: 2rem;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    
+    .offline-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: #fee2e2;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+    
+    .offline-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+    
+    .offline-message {
+      color: #6b7280;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+    
+    .offline-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+    
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+    
+    .connection-status {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    
+    .status-offline {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .status-online {
+      background: #dcfce7;
+      color: #059669;
+    }
+    
+    .cached-data {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #eff6ff;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+    }
+    
+    .cached-data h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: #1d4ed8;
+    }
+    
+    .cached-data ul {
+      list-style: none;
+      text-align: left;
+    }
+    
+    .cached-data li {
+      padding: 0.25rem 0;
+      color: #1e40af;
+    }
+    
+    .cached-data li::before {
+      content: "• ";
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">📶</div>
+    
+    <h1 class="offline-title">You're offline</h1>
+    
+    <p class="offline-message">
+      It looks like you've lost your internet connection. Don't worry, you can still access some features using cached data.
+    </p>
+    
+    <div class="offline-actions">
+      <button onclick="tryReconnect()" class="btn btn-primary">
+        Try to Reconnect
+      </button>
+      
+      <button onclick="goHome()" class="btn btn-secondary">
+        Go to Homepage
+      </button>
+    </div>
+    
+    <div id="connection-status" class="connection-status status-offline">
+      Connection Status: Offline
+    </div>
+    
+    <div class="cached-data">
+      <h3>Available Offline:</h3>
+      <ul>
+        <li>View previously loaded bookings</li>
+        <li>Browse cached boardroom information</li>
+        <li>Access user profile data</li>
+        <li>View calendar (cached events)</li>
+      </ul>
+      <p style="margin-top: 0.5rem; font-style: italic; color: #6b7280;">
+        New bookings will be saved and synced when you're back online.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Check connection status
+    function updateConnectionStatus() {
+      const statusElement = document.getElementById('connection-status');
+      
+      if (navigator.onLine) {
+        statusElement.textContent = 'Connection Status: Online';
+        statusElement.className = 'connection-status status-online';
+        
+        // Auto-redirect if online
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      } else {
+        statusElement.textContent = 'Connection Status: Offline';
+        statusElement.className = 'connection-status status-offline';
+      }
+    }
+    
+    // Try to reconnect
+    function tryReconnect() {
+      if (navigator.onLine) {
+        window.location.reload();
+      } else {
+        // Show a message or attempt to refresh
+        alert('Still offline. Please check your internet connection.');
+      }
+    }
+    
+    // Go to homepage
+    function goHome() {
+      window.location.href = '/';
+    }
+    
+    // Listen for online/offline events
+    window.addEventListener('online', updateConnectionStatus);
+    window.addEventListener('offline', updateConnectionStatus);
+    
+    // Initial status check
+    updateConnectionStatus();
+    
+    // Periodic connectivity check
+    setInterval(() => {
+      updateConnectionStatus();
+    }, 5000);
+    
+    // Register service worker if not already registered
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('SW registered: ', registration);
+          })
+          .catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+  </script>
+</body>
+</html>
