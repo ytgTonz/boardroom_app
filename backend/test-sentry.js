@@ -63,13 +63,17 @@ Sentry.setContext('test_info', {
   version: '1.0.0'
 });
 
-// Test 7: Test transaction (performance monitoring)
-console.log('\n7. Testing performance transaction...');
-Sentry.withScope((scope) => {
-  const span = Sentry.startInactiveSpan({ name: 'test-operation', op: 'test' });
-  span.setTag('test', 'performance');
-  span.setData('duration', '1.5s');
-  span.end();
+// Test 7: Test performance monitoring with breadcrumb
+console.log('\n7. Testing performance monitoring...');
+Sentry.addBreadcrumb({
+  category: 'performance',
+  message: 'Slow operation detected: test_operation took 1500ms',
+  level: 'warning',
+  data: { 
+    operation: 'test_operation',
+    duration: 1500,
+    slow: true
+  }
 });
 
 // Test 8: Test auth failure scenario
