@@ -286,6 +286,14 @@ export const api = {
       body: JSON.stringify(data),
     });
   },
+
+  post: async (url: string, data: any) => {
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 // Users API
