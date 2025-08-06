@@ -104,8 +104,13 @@ const createBooking = async (req, res) => {
     const startTimeUTC = new Date(startTime);
     const endTimeUTC = new Date(endTime);
     
-    console.log("Original start time:", startTime);
+    console.log("=== DEBUGGING BOOKING CREATION ===");
+    console.log("Original start time from frontend:", startTime);
     console.log("Converted to UTC:", startTimeUTC.toISOString());
+    console.log("Type of startTime:", typeof startTime);
+    console.log("Type of startTimeUTC:", typeof startTimeUTC);
+    console.log("startTimeUTC value:", startTimeUTC);
+    console.log("Current time for comparison:", new Date().toISOString());
     
     const booking = new Booking({
       user: req.user.userId,
