@@ -71,18 +71,6 @@ class DatabaseMonitor {
     this.startPeriodicChecks();
   }
 
-  recordQuery(duration) {
-    this.metrics.queries.total++;
-    
-    if (duration > this.slowQueryThreshold) {
-      this.metrics.queries.slow++;
-      logger.warn('🐌 Slow query detected', { 
-        duration: `${duration}ms`,
-        threshold: `${this.slowQueryThreshold}ms`
-      });
-    }
-  }
-  
   setupQueryMonitoring() {
     // Monitor slow queries using Mongoose middleware
     mongoose.plugin((schema) => {
@@ -124,7 +112,26 @@ class DatabaseMonitor {
     });
   }
 
- 
+  recordQuery(duration) {
+    this.metrics.queries.total++;
+    
+    if (duration > this.slowQueryThreshold) {
+      this.metrics.queries.slow++;
+      logger.warn('🐌 Slow query detected', { 
+        duration: `${duration}ms`,
+        threshold: `${this.slowQueryThreshold}ms`
+      });
+    }
+
+    // Add to query time history
+    this.queryTimes.push(duration);
+    if (this.queryTimes.length > this.maxQueryHistorySize) {
+      this.queryTimes.shift();
+    }
+
+    // Update average response time
+    this.updateAverageResponseTime();
+  }
 
   updateAverageResponseTime() {
     if (this.queryTimes.length > 0) {
