@@ -112,12 +112,22 @@ Sentry.captureException(dbError, {
 });
 
 console.log('\n✅ Sentry integration test completed!');
-console.log('\nIf Sentry is properly configured, you should see these events in your Sentry dashboard:');
-console.log('- 1 info message');
-console.log('- 3 errors/exceptions');
-console.log('- 4 breadcrumbs');
-console.log('- 1 successful auth event');
-console.log('- 1 failed auth event');
-console.log('- 1 performance issue (slow operation)');
 
-console.log('\n📊 Check your Sentry dashboard at: https://sentry.io');
+// Force Sentry to flush events (wait for them to be sent)
+Sentry.close(2000).then(() => {
+  console.log('\n📤 All events sent to Sentry!');
+  console.log('\nYou should now see these events in your Sentry dashboard:');
+  console.log('- 1 info message (Test message)');
+  console.log('- 3 captured exceptions (Test, Auth failure, Database error)');
+  console.log('- 1 performance transaction');
+  console.log('- Multiple breadcrumbs for debugging context');
+  console.log('- User context and tags');
+  
+  console.log('\n📊 Check your Sentry dashboard at: https://sentry.io');
+  console.log('🎯 Project: boardroom-booking-backend');
+  
+  process.exit(0);
+}).catch((err) => {
+  console.error('❌ Error flushing Sentry events:', err);
+  process.exit(1);
+});
