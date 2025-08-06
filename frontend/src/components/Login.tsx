@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useFormValidation, validationRules } from '../hooks/useFormValidation';
 import FormField from './FormField';
+import { errorHandlers, contextualErrorMessages } from '../utils/errorHandler';
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
