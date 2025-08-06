@@ -46,8 +46,30 @@ const createBooking = async (req, res) => {
     
     // Validate time is in future (convert to UTC for comparison)
     const startTimeUTCForValidation = new Date(startTime);
+    const endTimeUTCForValidation = new Date(endTime);
+    
     if (startTimeUTCForValidation <= new Date()) {
       return res.status(400).json({ message: 'Start time must be in the future' });
+    }
+    
+    // Check same day booking
+    if (startTimeUTCForValidation.toDateString() !== endTimeUTCForValidation.toDateString()) {
+      return res.status(400).json({ message: 'Booking cannot span multiple days' });
+    }
+    
+    // Check working hours (7:00-16:00)
+    const startHour = startTimeUTCForValidation.getUTCHours();
+    const endHour = endTimeUTCForValidation.getUTCHours();
+    const endMinutes = endTimeUTCForValidation.getUTCMinutes();
+    
+    if (startHour < 7 || startHour >= 16 || endHour < 7 || (endHour >= 16 && endMinutes > 0)) {
+      return res.status(400).json({ message: 'Booking must be within working hours (07:00-16:00)' });
+    }
+    
+    // Maximum duration check (8 hours)
+    const durationHours = (endTimeUTCForValidation - startTimeUTCForValidation) / (1000 * 60 * 60);
+    if (durationHours > 8) {
+      return res.status(400).json({ message: 'Maximum booking duration is 8 hours' });
     }
     
     // Check for boardroom conflicts
