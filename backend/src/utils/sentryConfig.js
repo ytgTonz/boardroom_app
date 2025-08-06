@@ -316,7 +316,7 @@ class ErrorTracker {
    * Get status information
    */
   getStatus() {
-    const isDsnConfigured = !process.env.SENTRY_DSN;
+    const isDsnConfigured = !!process.env.SENTRY_DSN;
     return {
       enabled: isDsnConfigured,
       dsn: isDsnConfigured ? 'configured' : 'not configured', 
