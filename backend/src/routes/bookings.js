@@ -8,6 +8,7 @@ const {
   adminCancelBooking,
   adminDeleteBooking, 
   getBoardroomAvailability,
+  getDetailedAvailability,
   getAllBookings,
   optOutOfBooking // Import opt-out controller
 } = require('../controllers/bookingController');
