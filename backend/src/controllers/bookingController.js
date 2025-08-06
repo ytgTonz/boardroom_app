@@ -111,17 +111,40 @@ const createBooking = async (req, res) => {
     
     // Convert times to UTC to ensure consistent storage
     console.log('📅 About to convert startTime:', startTime, 'Type:', typeof startTime);
-    if (!startTime) {
-      console.log('🚨 ERROR: startTime is undefined/null/empty!');
-      return res.status(400).json({ message: 'startTime is required' });
+    if (!startTime || !endTime) {
+      console.log('🚨 ERROR: startTime or endTime is missing!');
+      return res.status(400).json({ message: 'startTime and endTime are required' });
     }
     
-    const startTimeUTC = new Date(startTime);
+    // Validate that the startTime is not the current time (which would indicate a bug)
+    const now = new Date();
+    const userStartTime = new Date(startTime);
+    const timeDiffMinutes = Math.abs(userStartTime.getTime() - now.getTime()) / (1000 * 60);
+    
+    if (timeDiffMinutes < 1) {
+      console.log('🚨 SUSPICIOUS: User startTime is very close to current time');
+      console.log('User startTime:', userStartTime.toISOString());
+      console.log('Current time:', now.toISOString());
+      console.log('Difference (minutes):', timeDiffMinutes);
+      
+      // This might indicate the frontend sent the wrong time, let's reject it
+      return res.status(400).json({ 
+        message: 'Invalid booking time. The selected start time appears to be the current time instead of a future booking slot.',
+        debug: {
+          receivedStartTime: startTime,
+          parsedStartTime: userStartTime.toISOString(),
+          currentTime: now.toISOString(),
+          diffMinutes: timeDiffMinutes
+        }
+      });
+    }
+    
+    const startTimeUTC = userStartTime;
     const endTimeUTC = new Date(endTime);
     
-    console.log('📅 After conversion:');
-    console.log('startTimeUTC:', startTimeUTC);
-    console.log('startTimeUTC.toISOString():', startTimeUTC.toISOString());
+    console.log('📅 After conversion and validation:');
+    console.log('startTimeUTC:', startTimeUTC.toISOString());
+    console.log('endTimeUTC:', endTimeUTC.toISOString());
     
     console.log("=== DEBUGGING BOOKING CREATION ===");
     console.log("Original start time from frontend:", startTime);
