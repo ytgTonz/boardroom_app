@@ -86,6 +86,8 @@ const MyBookings: React.FC = () => {
       await bookingsAPI.optOut(bookingId);
       // Refresh bookings
       const updatedBookings = await bookingsAPI.getMyBookings();
+      console.log('=== BOOKINGS AFTER OPT OUT ===');
+      console.log('Updated bookings:', updatedBookings);
       setBookings(updatedBookings);
       alert('You have opted out of this meeting.');
     } catch (error: any) {
