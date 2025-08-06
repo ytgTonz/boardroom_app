@@ -285,6 +285,7 @@ export const api = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
+    return handleResponse(response);
   },
 
   post: async (url: string, data: any) => {
@@ -293,6 +294,7 @@ export const api = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
+    return handleResponse(response);
   },
 };
 
