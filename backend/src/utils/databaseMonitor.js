@@ -80,7 +80,7 @@ class DatabaseMonitor {
 
       schema.post(/^find/, function(result) {
         const duration = Date.now() - this.startTime;
-        this.recordQuery(duration);
+        recordQuery(duration);
       });
 
       schema.pre('save', function() {
@@ -89,7 +89,7 @@ class DatabaseMonitor {
 
       schema.post('save', function() {
         const duration = Date.now() - this.startTime;
-        this.recordQuery(duration);
+        recordQuery(duration);
       });
 
       schema.pre('updateOne', function() {
@@ -98,7 +98,7 @@ class DatabaseMonitor {
 
       schema.post('updateOne', function() {
         const duration = Date.now() - this.startTime;
-        this.recordQuery(duration);
+        recordQuery(duration);
       });
 
       schema.pre('deleteOne', function() {
@@ -107,7 +107,7 @@ class DatabaseMonitor {
 
       schema.post('deleteOne', function() {
         const duration = Date.now() - this.startTime;
-        this.recordQuery(duration);
+        recordQuery(duration);
       });
     });
   }
