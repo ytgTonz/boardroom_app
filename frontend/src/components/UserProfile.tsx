@@ -76,7 +76,6 @@ const UserProfile: React.FC = () => {
   const fetchUserStats = async () => {
     try {
       const response = await api.get('/users/profile/stats');
-      console.log("response data:", response);
       setUserStats(response);
     } catch (error) {
       console.error('Error fetching user stats:', error);
