@@ -20,7 +20,7 @@ const register = async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-     // logger.logAuth('register', null, false, { email, reason: 'User already exists' });
+      logger.logAuth('register', null, false, { email, reason: 'User already exists' });
       errorTracker.trackAuth('register', email, false, { reason: 'User already exists' });
       return res.status(400).json({ message: 'User already exists' });
     }
@@ -111,7 +111,7 @@ const login = async (req, res) => {
     );
 
     // Track successful login
-  //  logger.logAuth('login', user._id.toString(), true, { email, name: user.name });
+    logger.logAuth('login', user._id.toString(), true, { email, name: user.name });
     errorTracker.trackAuth('login', user._id.toString(), true, { email, name: user.name });
     errorTracker.setUser({ id: user._id.toString(), email, name: user.name });
 
@@ -131,7 +131,7 @@ const login = async (req, res) => {
       extra: { email: req.body.email }
     });
 
-   // logger.error('Login error:', error);
+    logger.error('Login error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
