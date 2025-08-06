@@ -81,15 +81,6 @@ class DatabaseMonitor {
         threshold: `${this.slowQueryThreshold}ms`
       });
     }
-
-    // Add to query time history
-    this.queryTimes.push(duration);
-    if (this.queryTimes.length > this.maxQueryHistorySize) {
-      this.queryTimes.shift();
-    }
-
-    // Update average response time
-    this.updateAverageResponseTime();
   }
   
   setupQueryMonitoring() {
