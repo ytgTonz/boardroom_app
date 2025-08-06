@@ -20,8 +20,9 @@ const getUserBookings = async (req, res) => {
 };
 
 const createBooking = async (req, res) => {
+  console.log('\n\n🔥🔥🔥 BOOKING CREATION STARTED 🔥🔥🔥');
   console.log('=== BACKEND: createBooking called ===');
-  console.log('Request body:', req.body);
+  console.log('Request body:', JSON.stringify(req.body, null, 2));
   console.log('User:', req.user);
   
   try {
