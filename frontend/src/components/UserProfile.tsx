@@ -117,7 +117,7 @@ const UserProfile: React.FC = () => {
       const response = await api.put('/users/profile', profileData);
       
       // Update the auth context with new user data
-      updateUser(response.data.user);
+      updateUser(response);
       
       setOriginalData(profileData);
       setIsEditing(false);
