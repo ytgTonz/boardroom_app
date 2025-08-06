@@ -3,8 +3,14 @@
  * Run this script to test if Sentry is working properly
  */
 
+// IMPORTANT: Initialize Sentry FIRST, before any other requires
+require('./src/utils/instrument.js');
+
+// Now import Sentry after it's initialized
+const Sentry = require('@sentry/node');
+
+// Load environment and other modules
 require('./src/utils/validateEnvironment');
-const errorTracker = require('./src/utils/sentryConfig');
 
 console.log('🧪 Testing Sentry Integration...\n');
 
