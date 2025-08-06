@@ -28,6 +28,10 @@ const createBooking = async (req, res) => {
   try {
     const { boardroom, startTime, endTime, purpose, attendees, notes } = req.body;
     
+    console.log('🎯 IMMEDIATELY after destructuring:');
+    console.log('startTime from req.body:', startTime);
+    console.log('endTime from req.body:', endTime);
+    
     // Handle both old format (array of strings) and new format (object with users/external)
     let userAttendees = [];
     let externalAttendees = [];
