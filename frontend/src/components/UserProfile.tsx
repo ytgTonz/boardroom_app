@@ -31,6 +31,7 @@ interface UserStats {
   totalBookings: number;
   upcomingBookings: number;
   completedBookings: number;
+  cancelledBookings: number;
   lastBookingDate?: string;
 }
 
@@ -42,7 +43,8 @@ const UserProfile: React.FC = () => {
   const [userStats, setUserStats] = useState<UserStats>({
     totalBookings: 0,
     upcomingBookings: 0,
-    completedBookings: 0
+    completedBookings: 0,
+    cancelledBookings: 0
   });
   
   const [profileData, setProfileData] = useState<UserProfileData>({
@@ -409,6 +411,14 @@ const UserProfile: React.FC = () => {
                   <span className="text-sm text-gray-600">Completed</span>
                 </div>
                 <span className="text-sm font-semibold text-gray-900">{userStats.completedBookings}</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 text-red-500" />
+                  <span className="text-sm text-gray-600">Cancelled</span>
+                </div>
+                <span className="text-sm font-semibold text-red-600">{userStats.cancelledBookings}</span>
               </div>
               
               <div className="pt-4 border-t border-gray-200">

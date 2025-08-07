@@ -95,6 +95,12 @@ router.get('/profile/stats', authenticateToken, async (req, res) => {
       status: 'confirmed'
     });
 
+    // Get cancelled bookings (where user was an attendee and booking was cancelled)
+    const cancelledBookings = await Booking.countDocuments({ 
+      attendees: userId,
+      status: 'cancelled'
+    });
+
     // Get last booking date (most recent booking where user was an attendee)
     const lastBooking = await Booking.findOne(
       { attendees: userId },
@@ -106,6 +112,7 @@ router.get('/profile/stats', authenticateToken, async (req, res) => {
       totalBookings,
       upcomingBookings,
       completedBookings,
+      cancelledBookings,
       lastBookingDate: lastBooking?.startTime || null
     });
   } catch (error) {
