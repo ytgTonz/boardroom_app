@@ -76,37 +76,37 @@ router.get('/profile/stats', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const now = new Date();
 
-    // Get total bookings
+    // Get total bookings (where user is an attendee)
     const totalBookings = await Booking.countDocuments({ 
-      user: userId 
+      attendees: userId 
     });
 
-    // Get upcoming bookings
+    // Get upcoming bookings (where user is an attendee and booking is in the future)
     const upcomingBookings = await Booking.countDocuments({ 
-      user: userId,
-      date: { $gte: now },
+      attendees: userId,
+      startTime: { $gte: now },
       status: { $nin: ['cancelled'] }
     });
 
-    // Get completed bookings
+    // Get completed bookings (where user was an attendee and booking is in the past)
     const completedBookings = await Booking.countDocuments({ 
-      user: userId,
-      date: { $lt: now },
+      attendees: userId,
+      startTime: { $lt: now },
       status: 'confirmed'
     });
 
-    // Get last booking date
+    // Get last booking date (most recent booking where user was an attendee)
     const lastBooking = await Booking.findOne(
-      { user: userId },
-      { date: 1 },
-      { sort: { createdAt: -1 } }
+      { attendees: userId },
+      { startTime: 1 },
+      { sort: { startTime: -1 } }
     );
 
     res.json({
       totalBookings,
       upcomingBookings,
       completedBookings,
-      lastBookingDate: lastBooking?.date || null
+      lastBookingDate: lastBooking?.startTime || null
     });
   } catch (error) {
     console.error('Error fetching user stats:', error);

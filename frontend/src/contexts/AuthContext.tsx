@@ -4,12 +4,17 @@ import { authAPI } from '../services/api';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../redux/hooks';
 import { setUser as setReduxUser, clearUser } from '../../redux/user-store/userSlice';
+import { parse } from 'path';
 
 interface User {
   _id: string;
   name: string;
   email: string;
   role: string;
+  department: string;
+  position:string;
+  location:string;
+  phone:string;
 }
 
 interface AuthContextType {
@@ -52,7 +57,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             _id: parsedUser.id || parsedUser._id,
             name: parsedUser.name,
             email: parsedUser.email,
-            role: parsedUser.role
+            role: parsedUser.role,
+            department: parsedUser.department,
+            position: parsedUser.position,
+            location: parsedUser.location,
+            phone: parsedUser.phone
           };
           
           setUser(userForContext);
@@ -62,7 +71,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             _id: userForContext._id,
             name: userForContext.name,
             email: userForContext.email,
-            role: userForContext.role
+            role: userForContext.role,
+            department: userForContext.department,
+            position: userForContext.position,
+            location: userForContext.location,
+            phone: userForContext.phone
           }));
         } catch (error) {
           console.error('Error parsing stored user data:', error);
@@ -168,7 +181,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       _id: apiUser._id || apiUser.id,
       name: apiUser.name,
       email: apiUser.email,
-      role: apiUser.role
+      role: apiUser.role,
+      department: apiUser.department,
+      position: apiUser.position,
+      location: apiUser.location,
+      phone: apiUser.phone
     };
     
     // Update localStorage (keep API format for compatibility)

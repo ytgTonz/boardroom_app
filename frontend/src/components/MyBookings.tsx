@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { bookingsAPI } from '../services/api';
 import { Booking } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,28 +7,45 @@ import EditBookingForm from './EditBookingForm';
 
 const MyBookings: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const { user } = useAuth();
 
+  const fetchBookings = async (showRefreshIndicator = false) => {
+    if (showRefreshIndicator) setRefreshing(true);
+    try {
+      // Add small delay for new bookings to ensure database consistency
+      if (location.state?.newBookingCreated) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      const data = await bookingsAPI.getMyBookings();
+      setBookings(data);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    } finally {
+      setLoading(false);
+      if (showRefreshIndicator) setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     if (!user) return; // Wait for user to be loaded
-    const fetchBookings = async () => {
-      try {
-        const data = await bookingsAPI.getMyBookings();
-        
-        
-        setBookings(data);
-      } catch (error) {
-        console.error('Error fetching bookings:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchBookings();
   }, [user]);
+
+  // Handle navigation from booking creation
+  useEffect(() => {
+    if (location.state?.refreshData && user) {
+      fetchBookings(true);
+      // Clear the navigation state to prevent repeated refreshes
+      navigate('/my-bookings', { replace: true, state: {} });
+    }
+  }, [location.state, user, navigate]);
 
   // Fixed cancel booking function to use the correct API method
   const handleCancelBooking = async (bookingId: string) => {
@@ -168,7 +185,17 @@ const MyBookings: React.FC = () => {
               Manage your boardroom reservations and view booking history.
             </p>
           </div>
-          <div className="mt-4 sm:mt-0 sm:ml-4">
+          <div className="mt-4 sm:mt-0 sm:ml-4 flex space-x-3">
+            <button
+              onClick={() => fetchBookings(true)}
+              disabled={refreshing}
+              className="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
+            >
+              <svg className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </button>
             <button
               onClick={() => navigate('/book')}
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
