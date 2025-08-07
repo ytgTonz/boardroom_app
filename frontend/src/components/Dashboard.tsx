@@ -96,17 +96,6 @@ const Dashboard: React.FC = () => {
             </p>
           </div>
           
-          {/* Real-time connection status */}
-          <div className="flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${
-              isConnected ? 'bg-green-500' : 'bg-red-500'
-            }`}></div>
-            <span className={`text-sm ${
-              isConnected ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {isConnected ? 'Live Updates' : 'Offline'}
-            </span>
-          </div>
         </div>
       </div>
 
