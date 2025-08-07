@@ -70,6 +70,23 @@ const EditBookingForm: React.FC<EditBookingFormProps> = ({ booking, onCancel, on
     fetchData();
   }, []);
 
+  // Check if time is within working hours (07:00 - 16:00)
+  const isWithinWorkingHours = (timeString: string) => {
+    if (!timeString) return false;
+    const time = new Date(timeString);
+    const hours = time.getHours();
+    return hours >= 7 && hours < 16;
+  };
+
+  // Check minimum booking duration (30 minutes)
+  const isMinimumBookingTime = (startTime: string, endTime: string) => {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffMinutes = Math.ceil(diffTime / (1000 * 60));
+    return diffMinutes >= 30;
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -95,6 +112,37 @@ const EditBookingForm: React.FC<EditBookingFormProps> = ({ booking, onCancel, on
 
       if (start < new Date()) {
         newErrors.startTime = 'Start time cannot be in the past';
+      }
+
+      // Check same day booking
+      if (start.toDateString() !== end.toDateString()) {
+        newErrors.endTime = 'Booking cannot span multiple days';
+      }
+
+      // Check working hours for start time
+      if (!isWithinWorkingHours(formData.startTime)) {
+        newErrors.startTime = 'Start time must be between 07:00 and 16:00 (working hours)';
+      }
+
+      // Check working hours for end time
+      if (!isWithinWorkingHours(formData.endTime)) {
+        newErrors.endTime = 'End time must be between 07:00 and 16:00 (working hours)';
+      }
+
+      // Check if booking spans outside working hours
+      if (end.getHours() > 16 || (end.getHours() === 16 && end.getMinutes() > 0)) {
+        newErrors.endTime = 'Booking must end by 16:00 (working hours)';
+      }
+
+      // Maximum booking duration (8 hours)
+      const durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      if (durationHours > 8) {
+        newErrors.endTime = 'Maximum booking duration is 8 hours';
+      }
+
+      // Minimum booking duration (30 minutes)
+      if (!isMinimumBookingTime(formData.startTime, formData.endTime)) {
+        newErrors.startTime = 'Booking must be at least 30 minutes long';
       }
     }
 
