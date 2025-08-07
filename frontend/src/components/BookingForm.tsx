@@ -163,15 +163,10 @@ const BookingForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('=== FORM SUBMISSION STARTED ===');
-    console.log('Form validation result:', validateForm());
     
     if (!validateForm()) {
-      console.log('Form validation failed, stopping submission');
       return;
     }
-    
-    console.log('Form validation passed, proceeding with submission');
     setSubmitting(true);
     try {
       // Convert datetime-local to ISO string for backend
@@ -180,12 +175,6 @@ const BookingForm: React.FC = () => {
       const startTimeISO = new Date(formData.startTime).toISOString();
       const endTimeISO = new Date(formData.endTime).toISOString();
       
-      console.log('=== FRONTEND DEBUGGING ===');
-      console.log('Frontend formData.startTime:', formData.startTime);
-      console.log('Frontend formData.endTime:', formData.endTime);
-      console.log('Frontend startTimeISO:', startTimeISO);
-      console.log('Frontend endTimeISO:', endTimeISO);
-      console.log('Current time for comparison:', new Date().toISOString());
       
       // Transform attendees data for backend
       const bookingData = {
@@ -198,10 +187,7 @@ const BookingForm: React.FC = () => {
         }
       };
       
-      console.log('About to send booking request with data:', bookingData);
-      
       const result = await bookingsAPI.create(bookingData);
-      console.log('Booking API response:', result);
       
       toast.success('Booking created successfully!');
       
@@ -336,12 +322,6 @@ const BookingForm: React.FC = () => {
   };
 
   const handleTimeSlotSelect = (startTime: string, endTime: string) => {
-    console.log('=== TIMESLOT SELECTION ===');
-    console.log('Selected startTime:', startTime);
-    console.log('Selected endTime:', endTime);
-    console.log('Type of startTime:', typeof startTime);
-    console.log('Current time:', new Date().toISOString());
-    
     setFormData(prev => ({
       ...prev,
       startTime,

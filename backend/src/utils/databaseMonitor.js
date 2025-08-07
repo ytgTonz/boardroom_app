@@ -76,38 +76,38 @@ class DatabaseMonitor {
     const monitor = this;
     mongoose.plugin((schema) => {
       schema.pre(/^find/, function() {
-        this.startTime = Date.now();
+        this._queryStartTime = Date.now();
       });
 
       schema.post(/^find/, function(result) {
-        const duration = Date.now() - this.startTime;
+        const duration = Date.now() - this._queryStartTime;
         monitor.recordQuery(duration); // Use the captured reference
       });
 
       schema.pre('save', function() {
-        this.startTime = Date.now();
+        this._queryStartTime = Date.now();
       });
 
       schema.post('save', function() {
-        const duration = Date.now() - this.startTime;
+        const duration = Date.now() - this._queryStartTime;
         monitor.recordQuery(duration);
       });
 
       schema.pre('updateOne', function() {
-        this.startTime = Date.now();
+        this._queryStartTime = Date.now();
       });
 
       schema.post('updateOne', function() {
-        const duration = Date.now() - this.startTime;
+        const duration = Date.now() - this._queryStartTime;
         monitor.recordQuery(duration);
       });
 
       schema.pre('deleteOne', function() {
-        this.startTime = Date.now();
+        this._queryStartTime = Date.now();
       });
 
       schema.post('deleteOne', function() {
-        const duration = Date.now() - this.startTime;
+        const duration = Date.now() - this._queryStartTime;
         monitor.recordQuery(duration);
       });
     });

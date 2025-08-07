@@ -19,36 +19,6 @@ const MyBookings: React.FC = () => {
       try {
         const data = await bookingsAPI.getMyBookings();
         
-        console.log('=== MY BOOKINGS DATA FROM BACKEND ===');
-        console.log('Raw bookings data:', data);
-        console.log('Number of bookings:', data.length);
-        
-        // Log each booking's timing details
-        data.forEach((booking: Booking, index: number) => {
-          console.log(`\n--- Booking ${index + 1} ---`);
-          console.log('ID:', booking._id);
-          console.log('Purpose:', booking.purpose);
-          console.log('Start Time (raw):', booking.startTime);
-          console.log('End Time (raw):', booking.endTime);
-          console.log('Start Time (parsed):', new Date(booking.startTime).toString());
-          console.log('End Time (parsed):', new Date(booking.endTime).toString());
-          console.log('Created At:', booking.createdAt);
-          console.log('Modified At:', booking.modifiedAt);
-          console.log('Status:', booking.status);
-          
-          // Check if startTime matches creation time
-          if (booking.createdAt) {
-            const createdTime = new Date(booking.createdAt);
-            const startTime = new Date(booking.startTime);
-            const timeDiffMs = Math.abs(startTime.getTime() - createdTime.getTime());
-            const timeDiffMinutes = timeDiffMs / (1000 * 60);
-            console.log(`Time difference between startTime and createdAt: ${timeDiffMinutes.toFixed(2)} minutes`);
-            
-            if (timeDiffMinutes < 1) {
-              console.log('🚨 WARNING: startTime is very close to createdAt - possible timing issue!');
-            }
-          }
-        });
         
         setBookings(data);
       } catch (error) {
@@ -71,8 +41,6 @@ const MyBookings: React.FC = () => {
       await bookingsAPI.cancel(bookingId);
       // Refresh bookings
       const updatedBookings = await bookingsAPI.getMyBookings();
-      console.log('=== BOOKINGS AFTER CANCEL ===');
-      console.log('Updated bookings:', updatedBookings);
       setBookings(updatedBookings);
       alert('Booking cancelled successfully!');
     } catch (error: any) {
@@ -86,8 +54,6 @@ const MyBookings: React.FC = () => {
       await bookingsAPI.optOut(bookingId);
       // Refresh bookings
       const updatedBookings = await bookingsAPI.getMyBookings();
-      console.log('=== BOOKINGS AFTER OPT OUT ===');
-      console.log('Updated bookings:', updatedBookings);
       setBookings(updatedBookings);
       alert('You have opted out of this meeting.');
     } catch (error: any) {
@@ -154,11 +120,7 @@ const MyBookings: React.FC = () => {
 
   // Helper functions to determine user's relationship to booking
   const isUserCreator = (booking: Booking) => {
-    let truthi = booking.user._id === user?._id;
-    console.log(booking.user._id)
-    console.log(user?._id)
-    console.log(truthi);
-    return truthi;
+    return booking.user._id === user?._id;
   };
 
   const isUserAttendee = (booking: Booking) => {
