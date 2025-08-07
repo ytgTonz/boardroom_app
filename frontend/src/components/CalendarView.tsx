@@ -5,7 +5,6 @@ import { bookingsAPI } from '../services/api';
 import { Booking } from '../types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BookingDetailsModal from './BookingDetailsModal';
-import { useSocket, BookingEvent } from '../hooks/useSocket';
 import toast from 'react-hot-toast';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
@@ -93,88 +92,6 @@ const CalendarView: React.FC = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Socket.IO event handlers
-  const handleBookingCreated = useCallback((data: BookingEvent) => {
-    const newEvent: CalendarEvent = {
-      id: data.booking._id,
-      title: `${data.booking.purpose} - ${data.booking.boardroom.name}`,
-      start: new Date(data.booking.startTime),
-      end: new Date(data.booking.endTime),
-      resource: data.booking
-    };
-    
-    setEvents(prevEvents => [...prevEvents, newEvent]);
-    toast.success('New booking created!', {
-      duration: 3000,
-      position: 'top-right',
-    });
-  }, []);
-
-  const handleBookingUpdated = useCallback((data: BookingEvent) => {
-    const updatedEvent: CalendarEvent = {
-      id: data.booking._id,
-      title: `${data.booking.purpose} - ${data.booking.boardroom.name}`,
-      start: new Date(data.booking.startTime),
-      end: new Date(data.booking.endTime),
-      resource: data.booking
-    };
-    
-    setEvents(prevEvents => 
-      prevEvents.map(event => 
-        event.id === data.booking._id ? updatedEvent : event
-      )
-    );
-    
-    let message = 'Booking updated!';
-    if (data.changes?.timeChanged) message += ' Time changed.';
-    if (data.changes?.boardroomChanged) message += ' Room changed.';
-    if (data.changes?.attendeesChanged) message += ' Attendees changed.';
-    
-    toast.success(message, {
-      duration: 3000,
-      position: 'top-right',
-    });
-  }, []);
-
-  const handleBookingCancelled = useCallback((data: BookingEvent) => {
-    setEvents(prevEvents => 
-      prevEvents.filter(event => event.id !== data.booking._id)
-    );
-    
-    const message = data.cancelledBy === 'admin' 
-      ? 'Booking cancelled by admin' 
-      : 'Booking cancelled';
-    
-    toast.error(message, {
-      duration: 3000,
-      position: 'top-right',
-    });
-  }, []);
-
-  const handleBookingDeleted = useCallback((data: BookingEvent) => {
-    setEvents(prevEvents => 
-      prevEvents.filter(event => event.id !== data.booking._id)
-    );
-    
-    const message = data.deletedBy === 'admin' 
-      ? 'Booking deleted by admin' 
-      : 'Booking deleted';
-    
-    toast.error(message, {
-      duration: 3000,
-      position: 'top-right',
-    });
-  }, []);
-
-  // Initialize Socket.IO connection
-  const { isConnected, connectionError } = useSocket({
-    autoConnect: true,
-    rooms: ['bookings'], // Join general bookings room
-    onBookingCreated: handleBookingCreated,
-    onBookingUpdated: handleBookingUpdated,
-    onBookingCancelled: handleBookingCancelled,
-    onBookingDeleted: handleBookingDeleted,
-  });
 
   const fetchBookings = useCallback(async (date: Date, view: View) => {
     setLoading(true);
@@ -305,25 +222,7 @@ const CalendarView: React.FC = () => {
               View all boardroom bookings in calendar format.
             </p>
           </div>
-          
-          {/* Real-time connection status */}
-          <div className="flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${
-              isConnected ? 'bg-green-500' : 'bg-red-500'
-            }`}></div>
-            <span className={`text-sm ${
-              isConnected ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {isConnected ? 'Live Updates' : 'Disconnected'}
-            </span>
-          </div>
         </div>
-        
-        {connectionError && (
-          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
-            Connection error: {connectionError}
-          </div>
-        )}
       </div>
 
       <div className="card">

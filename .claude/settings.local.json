@@ -22,7 +22,8 @@
       "Bash(npm test:*)",
       "Bash(npm run test:*)",
       "Bash(git checkout:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }

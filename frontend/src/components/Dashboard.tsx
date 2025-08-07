@@ -4,18 +4,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { bookingsAPI, boardroomsAPI } from '../services/api';
 import { Booking, Boardroom } from '../types';
 import MiniCalendar from './MiniCalendar';
-import { useSocket } from '../hooks/useSocket';
 import { DashboardSkeleton } from './LoadingSkeleton';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // Initialize Socket.IO connection
-  const { isConnected } = useSocket({
-    autoConnect: true,
-    rooms: ['dashboard']
-  });
   const [stats, setStats] = useState({
     totalBookings: 0,
     upcomingBookings: 0,

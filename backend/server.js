@@ -9,8 +9,6 @@ const Sentry = require('@sentry/node');
 const errorTracker = require('./src/utils/sentryConfig');
 
 const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -48,7 +46,6 @@ const monitoringRoutes = require('./src/routes/monitoring');
 const backupRoutes = require('./src/routes/backup');
 
 const app = express();
-const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
 // Security middleware
@@ -123,37 +120,6 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
-
-// Socket.IO configuration with CORS
-const io = socketIo(server, {
-  cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-    methods: ['GET', 'POST'],
-    credentials: true
-  }
-});
-
-// Socket.IO event handlers
-io.on('connection', (socket) => {
-  logger.info(`🔌 User connected: ${socket.id}`);
-
-  socket.on('join-room', (room) => {
-    socket.join(room);
-    logger.info(`👤 User ${socket.id} joined room: ${room}`);
-  });
-
-  socket.on('leave-room', (room) => {
-    socket.leave(room);
-    logger.info(`👤 User ${socket.id} left room: ${room}`);
-  });
-
-  socket.on('disconnect', () => {
-    logger.info(`🔌 User disconnected: ${socket.id}`);
-  });
-});
-
-// Make io available to routes
-app.set('io', io);
 
 // Sentry is initialized in instrument.js
 
@@ -309,13 +275,12 @@ app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   logger.startup(`Server running on port ${PORT}`, {
     port: PORT,
     environment: process.env.NODE_ENV || 'development',
     healthCheck: `http://localhost:${PORT}/api/health`,
     emailService: process.env.EMAIL_USER ? 'Configured' : 'Test mode',
-    socketIO: 'enabled',
     rateLimits: {
       general: `${rateLimits.general} requests/15min`,
       auth: `${rateLimits.auth} requests/15min`,

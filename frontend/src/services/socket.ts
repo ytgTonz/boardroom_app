@@ -1,136 +1,62 @@
-import { io, Socket } from 'socket.io-client';
+// Socket.io has been removed from this application
+// This file is kept as a placeholder to avoid breaking imports
 
 class SocketService {
-  private socket: Socket | null = null;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-
-  connect(): Socket {
-    if (this.socket?.connected) {
-      return this.socket;
-    }
-
-    // Get socket URL from environment variable
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
-    
-    if (import.meta.env.DEV) {
-      console.log('🔌 Socket.IO connecting to:', socketUrl);
-    }
-    
-    this.socket = io(socketUrl, {
-      withCredentials: true,
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: this.maxReconnectAttempts,
-      reconnectionDelay: 1000,
-    });
-
-    this.socket.on('connect', () => {
-      console.log('🔌 Connected to Socket.IO server');
-      this.reconnectAttempts = 0;
-    });
-
-    this.socket.on('disconnect', (reason) => {
-      console.log('🔌 Disconnected from Socket.IO server:', reason);
-    });
-
-    this.socket.on('connect_error', (error) => {
-      console.error('🔌 Socket.IO connection error:', error);
-      this.reconnectAttempts++;
-      
-      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error('🔌 Max reconnection attempts reached');
-      }
-    });
-
-    this.socket.on('reconnect', () => {
-      console.log('🔌 Reconnected to Socket.IO server');
-      this.reconnectAttempts = 0;
-    });
-
-    return this.socket;
+  connect() {
+    // No-op: Socket.io functionality removed
+    return null;
   }
 
-  disconnect(): void {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
-    }
+  disconnect() {
+    // No-op: Socket.io functionality removed
   }
 
-  getSocket(): Socket | null {
-    return this.socket;
+  getSocket() {
+    return null;
   }
 
-  // Room management
-  joinRoom(room: string): void {
-    if (this.socket) {
-      this.socket.emit('join-room', room);
-    }
+  joinRoom(room: string) {
+    // No-op: Socket.io functionality removed
   }
 
-  leaveRoom(room: string): void {
-    if (this.socket) {
-      this.socket.emit('leave-room', room);
-    }
+  leaveRoom(room: string) {
+    // No-op: Socket.io functionality removed
   }
 
-  // Booking event listeners
-  onBookingCreated(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.on('booking-created', callback);
-    }
+  onBookingCreated(callback: (data: any) => void) {
+    // No-op: Socket.io functionality removed
   }
 
-  onBookingUpdated(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.on('booking-updated', callback);
-    }
+  onBookingUpdated(callback: (data: any) => void) {
+    // No-op: Socket.io functionality removed
   }
 
-  onBookingCancelled(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.on('booking-cancelled', callback);
-    }
+  onBookingCancelled(callback: (data: any) => void) {
+    // No-op: Socket.io functionality removed
   }
 
-  onBookingDeleted(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.on('booking-deleted', callback);
-    }
+  onBookingDeleted(callback: (data: any) => void) {
+    // No-op: Socket.io functionality removed
   }
 
-  // Remove event listeners
-  offBookingCreated(): void {
-    if (this.socket) {
-      this.socket.off('booking-created');
-    }
+  offBookingCreated() {
+    // No-op: Socket.io functionality removed
   }
 
-  offBookingUpdated(): void {
-    if (this.socket) {
-      this.socket.off('booking-updated');
-    }
+  offBookingUpdated() {
+    // No-op: Socket.io functionality removed
   }
 
-  offBookingCancelled(): void {
-    if (this.socket) {
-      this.socket.off('booking-cancelled');
-    }
+  offBookingCancelled() {
+    // No-op: Socket.io functionality removed
   }
 
-  offBookingDeleted(): void {
-    if (this.socket) {
-      this.socket.off('booking-deleted');
-    }
+  offBookingDeleted() {
+    // No-op: Socket.io functionality removed
   }
 
-  // Remove all booking event listeners
-  removeAllBookingListeners(): void {
-    this.offBookingCreated();
-    this.offBookingUpdated();
-    this.offBookingCancelled();
-    this.offBookingDeleted();
+  removeAllBookingListeners() {
+    // No-op: Socket.io functionality removed
   }
 }
 
