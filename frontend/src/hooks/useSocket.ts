@@ -95,7 +95,7 @@ export const useSocket = (options: UseSocketOptions = {}) => {
       // Remove booking event listeners
       socketService.removeAllBookingListeners();
     };
-  }, [autoConnect, onBookingCreated, onBookingUpdated, onBookingCancelled, onBookingDeleted]);
+  }, [autoConnect, rooms, onBookingCreated, onBookingUpdated, onBookingCancelled, onBookingDeleted]);
 
   // Handle room changes
   useEffect(() => {

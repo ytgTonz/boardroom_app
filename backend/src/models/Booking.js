@@ -103,5 +103,9 @@ bookingSchema.index({ status: 1, startTime: 1 }, { name: 'booking_status_time' }
 bookingSchema.index({ user: 1, status: 1, startTime: -1 }, { name: 'booking_user_status_time' });
 bookingSchema.index({ boardroom: 1, startTime: 1, status: 1 }, { name: 'booking_room_time_status' });
 bookingSchema.index({ createdAt: -1 }, { name: 'booking_created_desc' });
+// Critical indexes for performance fixes
+bookingSchema.index({ attendees: 1 }, { name: 'booking_attendees' });
+bookingSchema.index({ attendees: 1, startTime: -1 }, { name: 'booking_attendees_time' });
+bookingSchema.index({ boardroom: 1, status: 1, startTime: 1, endTime: 1 }, { name: 'booking_conflict_check' });
 
 module.exports = mongoose.model('Booking', bookingSchema); 
