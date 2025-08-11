@@ -24,7 +24,27 @@ const MyBookings: React.FC = () => {
       }
       
       const data = await bookingsAPI.getMyBookings();
-      setBookings(data);
+      
+      // Sort bookings: upcoming first (by proximity), then completed (by proximity)
+      const sortedBookings = data.sort((a, b) => {
+        const now = new Date();
+        const aStartTime = new Date(a.startTime);
+        const bStartTime = new Date(b.startTime);
+        
+        const aIsUpcoming = aStartTime > now;
+        const bIsUpcoming = bStartTime > now;
+        
+        // If one is upcoming and other is completed, upcoming comes first
+        if (aIsUpcoming && !bIsUpcoming) return -1;
+        if (!aIsUpcoming && bIsUpcoming) return 1;
+        
+        // If both are same type (upcoming/completed), sort by proximity
+        const timeA = Math.abs(aStartTime.getTime() - now.getTime());
+        const timeB = Math.abs(bStartTime.getTime() - now.getTime());
+        return timeA - timeB;
+      });
+      
+      setBookings(sortedBookings);
     } catch (error) {
       console.error('Error fetching bookings:', error);
     } finally {

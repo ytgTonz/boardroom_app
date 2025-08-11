@@ -38,7 +38,26 @@ const Dashboard: React.FC = () => {
           availableBoardrooms: allBoardrooms.filter((room: Boardroom) => room.isActive).length
         });
 
-        setRecentBookings(myBookings.slice(0, 5));
+        // Sort bookings: upcoming first (by proximity), then completed (by proximity)
+        const sortedBookings = myBookings.sort((a, b) => {
+          const now = new Date();
+          const aStartTime = new Date(a.startTime);
+          const bStartTime = new Date(b.startTime);
+          
+          const aIsUpcoming = aStartTime > now;
+          const bIsUpcoming = bStartTime > now;
+          
+          // If one is upcoming and other is completed, upcoming comes first
+          if (aIsUpcoming && !bIsUpcoming) return -1;
+          if (!aIsUpcoming && bIsUpcoming) return 1;
+          
+          // If both are same type (upcoming/completed), sort by proximity
+          const timeA = Math.abs(aStartTime.getTime() - now.getTime());
+          const timeB = Math.abs(bStartTime.getTime() - now.getTime());
+          return timeA - timeB;
+        });
+        
+        setRecentBookings(sortedBookings.slice(0, 5));
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -210,6 +229,13 @@ const Dashboard: React.FC = () => {
                           Modified
                         </span>
                       )}
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        new Date(booking.startTime) > new Date() 
+                          ? 'bg-blue-100 text-blue-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {new Date(booking.startTime) > new Date() ? 'Upcoming' : 'Completed'}
+                      </span>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
                         {booking.status}
                       </span>
