@@ -38,7 +38,15 @@ const Dashboard: React.FC = () => {
           availableBoardrooms: allBoardrooms.filter((room: Boardroom) => room.isActive).length
         });
 
-        setRecentBookings(myBookings.slice(0, 5));
+        // Sort bookings by proximity (closest date/time first)
+        const sortedBookings = myBookings.sort((a, b) => {
+          const now = new Date();
+          const timeA = Math.abs(new Date(a.startTime).getTime() - now.getTime());
+          const timeB = Math.abs(new Date(b.startTime).getTime() - now.getTime());
+          return timeA - timeB;
+        });
+        
+        setRecentBookings(sortedBookings.slice(0, 5));
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
