@@ -118,3 +118,4 @@ Thumbs.db
 
 #claude agent files
 *.claude/
+backend/nul
