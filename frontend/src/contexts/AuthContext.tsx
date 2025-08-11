@@ -12,9 +12,10 @@ interface User {
   email: string;
   role: string;
   department: string;
-  position:string;
-  location:string;
-  phone:string;
+  position: string;
+  location: string;
+  phone: string;
+  createdAt?: string;
 }
 
 interface AuthContextType {
@@ -61,7 +62,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             department: parsedUser.department,
             position: parsedUser.position,
             location: parsedUser.location,
-            phone: parsedUser.phone
+            phone: parsedUser.phone,
+            createdAt: parsedUser.createdAt
           };
           
           setUser(userForContext);
@@ -94,11 +96,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { token, user: apiUser } = response;
       
       // Map API response to our expected User format
-      const userForContext: User = {
-        _id: apiUser.id, // API returns 'id', we need '_id'
-        name: apiUser.name,
-        email: apiUser.email,
-        role: apiUser.role
+     const userForContext: User = {
+    _id: apiUser.id,
+    name: apiUser.name,
+    email: apiUser.email,
+    role: apiUser.role,
+    department: apiUser.department,
+    position: apiUser.position,
+    location: apiUser.location,
+    phone: apiUser.phone
       };
       
       // Store in localStorage (keep original API format for compatibility)
@@ -113,7 +119,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         _id: userForContext._id,
         name: userForContext.name,
         email: userForContext.email,
-        role: userForContext.role
+        role: userForContext.role,
+        department: userForContext.department,
+        position: userForContext.position,
+        location: userForContext.location,
+        phone: userForContext.phone
       }));
       
       toast.success('Login successful!');
@@ -133,7 +143,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         _id: apiUser.id, // API returns 'id', we need '_id'
         name: apiUser.name,
         email: apiUser.email,
-        role: apiUser.role
+        role: apiUser.role,
+        department: apiUser.department || '',
+        position: apiUser.position || '',
+        location: apiUser.location || '',
+        phone: apiUser.phone || '',
+        createdAt: apiUser.createdAt
       };
       
       // Store in localStorage (keep original API format for compatibility)
@@ -148,7 +163,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         _id: userForContext._id,
         name: userForContext.name,
         email: userForContext.email,
-        role: userForContext.role
+        role: userForContext.role,
+        department: userForContext.department,
+        position: userForContext.position,
+        location: userForContext.location,
+        phone: userForContext.phone
       }));
       
       toast.success('Registration successful!');
@@ -199,7 +218,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       _id: userForContext._id,
       name: userForContext.name,
       email: userForContext.email,
-      role: userForContext.role
+      role: userForContext.role,
+      department: userForContext.department,
+      position: userForContext.position,
+      location: userForContext.location,
+      phone: userForContext.phone
     }));
   };
 

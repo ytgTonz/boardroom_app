@@ -53,7 +53,12 @@ const register = async (req, res) => {
         id: user._id, 
         name, 
         email, 
-        role: user.role 
+        role: user.role,
+        phone: user.phone,
+        department: user.department,
+        position: user.position,
+        location: user.location,
+        createdAt: user.createdAt
       } 
     });
   } catch (error) {
@@ -121,7 +126,12 @@ const login = async (req, res) => {
         id: user._id, 
         name: user.name, 
         email, 
-        role: user.role 
+        role: user.role,
+        phone: user.phone,
+        department: user.department,
+        position: user.position,
+        location: user.location,
+        createdAt: user.createdAt
       } 
     });
   } catch (error) {
@@ -224,7 +234,7 @@ const forgotPassword = async (req, res) => {
       </div>
     `;
 
-    await emailService.sendEmail(email, emailSubject, emailBody);
+    await emailService.sendEmail(email, emailSubject, emailBody, true);
 
     // Track password reset request
     logger.info('Password reset requested', { 
