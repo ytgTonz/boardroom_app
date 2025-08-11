@@ -560,12 +560,12 @@ const getDetailedAvailability = async (req, res) => {
     for (let hour = workingHourStart; hour < workingHourEnd; hour++) {
       for (let minute = 0; minute < 60; minute += slotDuration) {
         const slotStart = new Date(queryDate);
-        slotStart.setHours(hour, minute, 0, 0);
+        slotStart.setUTCHours(hour, minute, 0, 0);
         const slotEnd = new Date(slotStart);
-        slotEnd.setMinutes(slotEnd.getMinutes() + slotDuration);
+        slotEnd.setUTCMinutes(slotEnd.getUTCMinutes() + slotDuration);
         
         // Skip if slot extends beyond working hours
-        if (slotEnd.getHours() >= workingHourEnd) {
+        if (slotEnd.getUTCHours() >= workingHourEnd) {
           break;
         }
         
