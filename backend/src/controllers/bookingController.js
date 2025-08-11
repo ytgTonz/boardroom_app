@@ -557,15 +557,20 @@ const getDetailedAvailability = async (req, res) => {
     const workingHourEnd = 16; // 4:00 PM
     const slotDuration = 30; // 30 minutes
     
+    // Define target timezone offset (Europe/Berlin = UTC+2)
+    const targetTimezoneOffset = 2 * 60; // +2 hours in minutes
+    
     for (let hour = workingHourStart; hour < workingHourEnd; hour++) {
       for (let minute = 0; minute < 60; minute += slotDuration) {
+        // Create date in UTC, then adjust for target timezone
         const slotStart = new Date(queryDate);
-        slotStart.setHours(hour, minute, 0, 0);
+        slotStart.setUTCHours(hour - 2, minute, 0, 0); // Subtract 2 hours to get UTC time for 7AM Berlin time
         const slotEnd = new Date(slotStart);
-        slotEnd.setMinutes(slotEnd.getMinutes() + slotDuration);
+        slotEnd.setUTCMinutes(slotEnd.getUTCMinutes() + slotDuration);
         
-        // Skip if slot extends beyond working hours
-        if (slotEnd.getHours() >= workingHourEnd) {
+        // Skip if slot extends beyond working hours (check in Berlin time)
+        const berlinHour = slotEnd.getUTCHours() + 2; // Convert UTC to Berlin time
+        if (berlinHour >= workingHourEnd) {
           break;
         }
         
