@@ -126,11 +126,14 @@ class PWAStorage {
   }
 
   async getUnsyncedBookings(): Promise<OfflineBooking[]> {
-    return this.executeTransaction(
+    const allBookings = await this.executeTransaction(
       STORES.OFFLINE_BOOKINGS,
       'readonly',
-      (store) => store.index('synced').getAll(IDBKeyRange.only(false))
+      (store) => store.getAll()
     );
+    
+    // Filter for unsynced bookings in memory to avoid IndexedDB key issues
+    return allBookings.filter(booking => booking.synced === false);
   }
 
   async markBookingAsSynced(id: string): Promise<void> {
@@ -229,13 +232,34 @@ class PWAStorage {
       (store) => store.getAll()
     );
   }
+
+  // Utility method to clear all data if corruption is detected
+  async clearAllData(): Promise<void> {
+    if (!this.db) return;
+    
+    const stores = [STORES.OFFLINE_BOOKINGS, STORES.CACHED_BOARDROOMS, STORES.CACHED_USERS, STORES.SYNC_QUEUE];
+    const transaction = this.db.transaction(stores, 'readwrite');
+    
+    for (const storeName of stores) {
+      const store = transaction.objectStore(storeName);
+      store.clear();
+    }
+    
+    await new Promise((resolve, reject) => {
+      transaction.oncomplete = () => resolve(undefined);
+      transaction.onerror = () => reject(transaction.error);
+    });
+  }
 }
 
 // Global instance
 export const pwaStorage = new PWAStorage();
 
 // Initialize storage
-pwaStorage.init().catch(console.error);
+pwaStorage.init().catch(error => {
+  // Use console.error here since logger might not be available during initialization
+  console.error('PWA Storage initialization failed:', error);
+});
 
 // PWA Installation utilities
 export const pwaInstallation = {
