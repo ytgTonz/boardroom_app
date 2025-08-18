@@ -37,6 +37,7 @@
     "imagekit": "^6.0.0",
     "jsonwebtoken": "^9.0.2",
     "mjml": "^4.15.3",
+    "moment-timezone": "^0.6.0",
     "mongoose": "^7.5.0",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",

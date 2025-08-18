@@ -5,6 +5,12 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const emailService = require('../services/emailService');
 const logger = require('../utils/logger');
+const moment = require('moment-timezone');
+
+// Business timezone configuration (SAST - South Africa Standard Time)
+const BUSINESS_TIMEZONE = process.env.BUSINESS_TIMEZONE || 'Africa/Johannesburg';
+const WORKING_HOURS_START = parseInt(process.env.WORKING_HOURS_START) || 7; // 07:00
+const WORKING_HOURS_END = parseInt(process.env.WORKING_HOURS_END) || 16;    // 16:00
 
 const getUserBookings = async (req, res) => {
   try {
@@ -70,13 +76,19 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: 'Booking cannot span multiple days' });
     }
     
-    // Check working hours (7:00-16:00)
-    const startHour = startTimeUTCForValidation.getUTCHours();
-    const endHour = endTimeUTCForValidation.getUTCHours();
-    const endMinutes = endTimeUTCForValidation.getUTCMinutes();
+    // Check working hours in business timezone (SAST)
+    const startTimeInBusiness = moment.utc(startTimeUTCForValidation).tz(BUSINESS_TIMEZONE);
+    const endTimeInBusiness = moment.utc(endTimeUTCForValidation).tz(BUSINESS_TIMEZONE);
     
-    if (startHour < 7 || startHour >= 16 || endHour < 7 || (endHour >= 16 && endMinutes > 0)) {
-      return res.status(400).json({ message: 'Booking must be within working hours (07:00-16:00)' });
+    const startHour = startTimeInBusiness.hour();
+    const endHour = endTimeInBusiness.hour();
+    const endMinutes = endTimeInBusiness.minute();
+    
+    if (startHour < WORKING_HOURS_START || startHour >= WORKING_HOURS_END || 
+        endHour < WORKING_HOURS_START || (endHour >= WORKING_HOURS_END && endMinutes > 0)) {
+      return res.status(400).json({ 
+        message: `Booking must be within working hours (${WORKING_HOURS_START.toString().padStart(2, '0')}:00-${WORKING_HOURS_END.toString().padStart(2, '0')}:00 ${BUSINESS_TIMEZONE.split('/')[1]})` 
+      });
     }
     
     // Maximum duration check (8 hours)
@@ -555,26 +567,26 @@ const getDetailedAvailability = async (req, res) => {
       });
     }
     
-    // Generate time slots for the entire working day (7:00 AM - 4:00 PM)
+    // Generate time slots for the business working day using SAST timezone
     const timeSlots = [];
-    const workingHourStart = 7; // 7:00 AM
-    const workingHourEnd = 16; // 4:00 PM
     const slotDuration = 30; // 30 minutes
     
-    // Define target timezone offset (Europe/Berlin = UTC+2)
-    const targetTimezoneOffset = 2 * 60; // +2 hours in minutes
+    // Create base date in business timezone for the requested day
+    const baseBusinessDate = moment.tz(queryDate, BUSINESS_TIMEZONE);
     
-    for (let hour = workingHourStart; hour < workingHourEnd; hour++) {
+    for (let hour = WORKING_HOURS_START; hour < WORKING_HOURS_END; hour++) {
       for (let minute = 0; minute < 60; minute += slotDuration) {
-        // Create date in UTC, then adjust for target timezone
-        const slotStart = new Date(queryDate);
-        slotStart.setUTCHours(hour - 2, minute, 0, 0); // Subtract 2 hours to get UTC time for 7AM Berlin time
-        const slotEnd = new Date(slotStart);
-        slotEnd.setUTCMinutes(slotEnd.getUTCMinutes() + slotDuration);
+        // Create slot times in business timezone
+        const slotStartBusiness = baseBusinessDate.clone().hour(hour).minute(minute).second(0).millisecond(0);
+        const slotEndBusiness = slotStartBusiness.clone().add(slotDuration, 'minutes');
         
-        // Skip if slot extends beyond working hours (check in Berlin time)
-        const berlinHour = slotEnd.getUTCHours() + 2; // Convert UTC to Berlin time
-        if (berlinHour >= workingHourEnd) {
+        // Convert to UTC for storage and API consistency
+        const slotStart = slotStartBusiness.clone().utc().toDate();
+        const slotEnd = slotEndBusiness.clone().utc().toDate();
+        
+        // Skip if slot extends beyond working hours
+        if (slotEndBusiness.hour() > WORKING_HOURS_END || 
+            (slotEndBusiness.hour() === WORKING_HOURS_END && slotEndBusiness.minute() > 0)) {
           break;
         }
         
