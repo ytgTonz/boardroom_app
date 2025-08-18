@@ -191,14 +191,9 @@ const BookingForm: React.FC = () => {
       
       toast.success('Booking created successfully!');
       
-      // Redirect to My Bookings page with refresh trigger
-      navigate('/my-bookings', { 
-        state: { 
-          refreshData: true, 
-          newBookingCreated: true,
-          timestamp: Date.now() 
-        } 
-      });
+      // Redirect to My Bookings page with URL params for refresh trigger
+      const timestamp = Date.now();
+      navigate(`/my-bookings?refresh=true&timestamp=${timestamp}&source=booking-created`);
     } catch (error: any) {
       // Use enhanced error handler for better user experience
       const errorDetails = errorHandlers.booking(error, 'create', formData);

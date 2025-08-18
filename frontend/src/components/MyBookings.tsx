@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { bookingsAPI } from '../services/api';
 import { Booking } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,6 +8,7 @@ import EditBookingForm from './EditBookingForm';
 const MyBookings: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
@@ -15,12 +16,12 @@ const MyBookings: React.FC = () => {
 
   const { user } = useAuth();
 
-  const fetchBookings = async (showRefreshIndicator = false) => {
+  const fetchBookings = async (showRefreshIndicator = false, isFromNavigation = false) => {
     if (showRefreshIndicator) setRefreshing(true);
     try {
-      // Add small delay for new bookings to ensure database consistency
-      if (location.state?.newBookingCreated) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+      // Add delay for new bookings to ensure database consistency
+      if (isFromNavigation) {
+        await new Promise(resolve => setTimeout(resolve, 800));
       }
       
       const data = await bookingsAPI.getMyBookings();
@@ -45,8 +46,12 @@ const MyBookings: React.FC = () => {
       });
       
       setBookings(sortedBookings);
+      
+      // Return success for navigation state clearing
+      return true;
     } catch (error) {
       console.error('Error fetching bookings:', error);
+      return false;
     } finally {
       setLoading(false);
       if (showRefreshIndicator) setRefreshing(false);
@@ -58,14 +63,36 @@ const MyBookings: React.FC = () => {
     fetchBookings();
   }, [user]);
 
-  // Handle navigation from booking creation
+  // Handle URL-based refresh trigger from booking creation
   useEffect(() => {
-    if (location.state?.refreshData && user) {
-      fetchBookings(true);
-      // Clear the navigation state to prevent repeated refreshes
-      navigate('/my-bookings', { replace: true, state: {} });
-    }
-  }, [location.state, user, navigate]);
+    const handleUrlRefresh = async () => {
+      const shouldRefresh = searchParams.get('refresh');
+      const timestamp = searchParams.get('timestamp');
+      const source = searchParams.get('source');
+      
+      if (shouldRefresh === 'true' && user) {
+        console.log('🔄 MyBookings: URL refresh triggered', { timestamp, source });
+        
+        // Fetch bookings with navigation flag
+        const success = await fetchBookings(true, true);
+        
+        // Clear URL params after successful refresh
+        if (success) {
+          console.log('✅ MyBookings: Refresh completed, clearing URL params');
+          // Remove refresh params from URL
+          const newSearchParams = new URLSearchParams(searchParams);
+          newSearchParams.delete('refresh');
+          newSearchParams.delete('timestamp');
+          newSearchParams.delete('source');
+          setSearchParams(newSearchParams, { replace: true });
+        } else {
+          console.error('❌ MyBookings: Refresh failed, keeping URL params');
+        }
+      }
+    };
+    
+    handleUrlRefresh();
+  }, [searchParams, user, setSearchParams]);
 
   // Fixed cancel booking function to use the correct API method
   const handleCancelBooking = async (bookingId: string) => {
@@ -233,8 +260,17 @@ const MyBookings: React.FC = () => {
       <div className="card">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900">
-            {bookings.length} Booking{bookings.length !== 1 ? 's' : ''}
+            {refreshing ? 'Loading...' : `${bookings.length} Booking${bookings.length !== 1 ? 's' : ''}`}
           </h2>
+          {refreshing && (
+            <div className="flex items-center text-sm text-blue-600">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Fetching latest bookings...
+            </div>
+          )}
         </div>
 
         {bookings.length === 0 ? (
