@@ -29,6 +29,7 @@ import PWAInstallPrompt from './components/PWAInstallPrompt';
 import OfflineStatus from './components/OfflineStatus';
 import { useAuth } from './contexts/AuthContext';
 import { pwaInstallation } from './utils/pwaUtils';
+import { logger } from './utils/logger';
 
 // Set up axios defaults from environment variable
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -68,7 +69,7 @@ axios.interceptors.response.use(
 
 // Log configuration in development
 if (import.meta.env.DEV) {
-  console.log('🔧 Frontend Configuration:', {
+  logger.config('Frontend Configuration', {
     apiUrl,
     environment: import.meta.env.VITE_ENVIRONMENT || 'development',
     version: import.meta.env.VITE_APP_VERSION || '1.0.0',

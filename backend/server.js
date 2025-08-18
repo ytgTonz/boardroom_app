@@ -1,7 +1,6 @@
 // backend/server.js (UPDATED WITH EMAIL)
 
-console.log('🚀🚀🚀 BACKEND SERVER STARTING - TIMESTAMP:', new Date().toISOString());
-console.log('🚀🚀🚀 THIS CONFIRMS WE ARE USING THE RIGHT SERVER FILE');
+// These startup logs are moved after logger initialization
 
 // IMPORTANT: Initialize Sentry FIRST, before any other requires
 require('./src/utils/instrument.js');
@@ -18,6 +17,13 @@ require('dotenv').config();
 
 // Initialize structured logging
 const logger = require('./src/utils/logger');
+
+// Server startup logs
+logger.startup('Backend server starting', { 
+  timestamp: new Date().toISOString(),
+  serverFile: 'server.js',
+  environment: process.env.NODE_ENV || 'development'
+});
 
 // Initialize database monitor
 const databaseMonitor = require('./src/utils/databaseMonitor');

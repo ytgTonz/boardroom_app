@@ -1,6 +1,9 @@
 /**
  * Sentry Integration Test
  * Run this script to test if Sentry is working properly
+ * 
+ * NOTE: This is a development/testing file with console.log statements
+ * for debugging purposes. It should not be used in production.
  */
 
 // Load environment variables first

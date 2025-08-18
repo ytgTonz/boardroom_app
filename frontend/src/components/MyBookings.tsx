@@ -4,6 +4,7 @@ import { bookingsAPI } from '../services/api';
 import { Booking } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import EditBookingForm from './EditBookingForm';
+import { logger } from '../utils/logger';
 
 const MyBookings: React.FC = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const MyBookings: React.FC = () => {
   const fetchBookings = async (showRefreshIndicator = false, isFromNavigation = false, retryCount = 0) => {
     // Prevent concurrent fetch operations
     if (isFetching) {
-      console.log('🚫 MyBookings: Fetch already in progress, skipping');
+      logger.booking.debug('Fetch already in progress, skipping', { action: 'fetch_bookings' });
       return false;
     }
     
@@ -31,11 +32,14 @@ const MyBookings: React.FC = () => {
     try {
       // Increased delay for better database consistency
       if (isFromNavigation) {
-        console.log('⏳ MyBookings: Waiting for database consistency (1500ms delay)');
+        logger.booking.debug('Waiting for database consistency', { 
+          action: 'delay_for_consistency',
+          delay: '1500ms'
+        });
         await new Promise(resolve => setTimeout(resolve, 1500));
       }
       
-      console.log('🔄 MyBookings: Fetching bookings from API');
+      logger.booking.debug('Fetching bookings from API', { action: 'api_call' });
       const data = await bookingsAPI.getMyBookings();
       
       // Sort bookings: upcoming first (by proximity), then completed (by proximity)
@@ -61,7 +65,8 @@ const MyBookings: React.FC = () => {
       
       // Check if we have a new booking (for retry logic)
       const hasNewBooking = isFromNavigation && data.length > previousBookingCount;
-      console.log('📊 MyBookings: Booking count comparison', { 
+      logger.booking.debug('Booking count comparison', { 
+        action: 'count_comparison',
         previous: previousBookingCount, 
         current: data.length, 
         hasNewBooking,
@@ -74,17 +79,26 @@ const MyBookings: React.FC = () => {
       
       // Retry logic if new booking not detected on first attempt
       if (isFromNavigation && !hasNewBooking && retryCount === 0 && previousBookingCount > 0) {
-        console.log('🔄 MyBookings: New booking not detected, retrying in 1000ms');
+        logger.booking.info('New booking not detected, retrying', { 
+          action: 'retry_fetch',
+          retryDelay: '1000ms'
+        });
         setIsFetching(false);
         if (showRefreshIndicator) setRefreshing(false);
         await new Promise(resolve => setTimeout(resolve, 1000));
         return fetchBookings(showRefreshIndicator, isFromNavigation, 1);
       }
       
-      console.log('✅ MyBookings: Fetch completed successfully', { bookingCount: data.length });
+      logger.booking.info('Fetch completed successfully', { 
+        action: 'fetch_success',
+        bookingCount: data.length 
+      });
       return true;
     } catch (error) {
-      console.error('❌ MyBookings: Error fetching bookings:', error);
+      logger.booking.error('Error fetching bookings', { 
+        action: 'fetch_error',
+        error: error as Error
+      });
       return false;
     } finally {
       setLoading(false);
@@ -95,7 +109,11 @@ const MyBookings: React.FC = () => {
 
   useEffect(() => {
     if (!user) return; // Wait for user to be loaded
-    console.log('🚀 MyBookings: Initial load for user:', user.email);
+    logger.booking.info('Initial load', { 
+      action: 'initial_load',
+      userId: user._id,
+      userEmail: user.email 
+    });
     fetchBookings();
   }, [user]);
 
@@ -107,7 +125,12 @@ const MyBookings: React.FC = () => {
       const source = searchParams.get('source');
       
       if (shouldRefresh === 'true' && user) {
-        console.log('🔄 MyBookings: URL refresh triggered', { timestamp, source, currentBookingCount: bookings.length });
+        logger.booking.info('URL refresh triggered', { 
+          action: 'url_refresh',
+          timestamp, 
+          source, 
+          currentBookingCount: bookings.length 
+        });
         
         // Store current booking count before refresh
         setPreviousBookingCount(bookings.length);
@@ -117,7 +140,9 @@ const MyBookings: React.FC = () => {
         
         // Clear URL params after successful refresh
         if (success) {
-          console.log('✅ MyBookings: Refresh completed, clearing URL params');
+          logger.booking.info('Refresh completed, clearing URL params', { 
+            action: 'clear_url_params'
+          });
           // Remove refresh params from URL
           const newSearchParams = new URLSearchParams(searchParams);
           newSearchParams.delete('refresh');
@@ -125,7 +150,9 @@ const MyBookings: React.FC = () => {
           newSearchParams.delete('source');
           setSearchParams(newSearchParams, { replace: true });
         } else {
-          console.error('❌ MyBookings: Refresh failed, keeping URL params');
+          logger.booking.error('Refresh failed, keeping URL params', { 
+            action: 'refresh_failed'
+          });
         }
       }
     };

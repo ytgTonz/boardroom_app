@@ -1,4 +1,5 @@
 // backend/test-nodemailer.js
+// NOTE: Development/testing file with console.log statements
 const nodemailer = require('nodemailer');
 
 console.log('Testing nodemailer import...');

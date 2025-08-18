@@ -4,6 +4,7 @@ const Boardroom = require('../models/Boardroom');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const emailService = require('../services/emailService');
+const logger = require('../utils/logger');
 
 const getUserBookings = async (req, res) => {
   try {
@@ -14,7 +15,10 @@ const getUserBookings = async (req, res) => {
       .sort({ startTime: -1 });
     res.json(bookings);
   } catch (error) {
-    console.error('Get user bookings error:', error);
+    logger.logError(error, { 
+      action: 'get_user_bookings',
+      userId: req.user?.userId
+    });
     res.status(500).json({ message: 'Server error' });
   }
 };

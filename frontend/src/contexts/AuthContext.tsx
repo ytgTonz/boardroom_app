@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useAppDispatch } from '../../redux/hooks';
 import { setUser as setReduxUser, clearUser } from '../../redux/user-store/userSlice';
 import { parse } from 'path';
+import { logger } from '../utils/logger';
 
 interface User {
   _id: string;
@@ -80,7 +81,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             phone: userForContext.phone
           }));
         } catch (error) {
-          console.error('Error parsing stored user data:', error);
+          logger.auth.error('Error parsing stored user data', { 
+            action: 'parse_stored_user',
+            error: error as Error
+          });
           // Clear invalid data
           localStorage.removeItem('token');
           localStorage.removeItem('user');

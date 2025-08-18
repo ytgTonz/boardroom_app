@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useFormValidation, validationRules } from '../hooks/useFormValidation';
 import FormField from './FormField';
 import { errorHandlers } from '../utils/errorHandler';
+import { logger } from '../utils/logger';
 
 const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -56,11 +57,22 @@ const Register: React.FC = () => {
     setError('');
     
     try {
-      console.log('Attempting registration with:', { name: values.name, email: values.email, password: '***' });
+      logger.auth.info('Attempting registration', { 
+        action: 'register_attempt',
+        name: values.name, 
+        email: values.email
+      });
       await register(values.name, values.email, values.password);
-      console.log('Registration successful');
+      logger.auth.info('Registration successful', { 
+        action: 'register_success',
+        email: values.email
+      });
     } catch (error: any) {
-      console.error('Registration error:', error);
+      logger.auth.error('Registration failed', { 
+        action: 'register_error',
+        email: values.email,
+        error: error as Error
+      });
       
       // Enhanced error handling
       const serverMessage = error.response?.data?.message || '';

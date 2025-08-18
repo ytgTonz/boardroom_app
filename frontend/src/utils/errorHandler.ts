@@ -1,5 +1,6 @@
 import { toast } from 'react-toastify';
 import { errorTracker } from './sentryConfig';
+import { logger } from './logger';
 
 export interface ErrorContext {
   component: string;
@@ -181,11 +182,13 @@ export const handleError = (error: any, context: ErrorContext, options: {
     });
   }
 
-  // Console log for development
-  console.error(`[${context.component}:${context.operation}]`, {
-    error,
+  // Log error with structured logging
+  logger.error(`Error in ${context.component}:${context.operation}`, {
+    component: context.component,
+    action: context.operation,
+    error: error as Error,
     errorDetails,
-    context
+    ...context.additionalData
   });
 
   return errorDetails;
