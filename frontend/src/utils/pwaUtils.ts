@@ -129,7 +129,7 @@ class PWAStorage {
     return this.executeTransaction(
       STORES.OFFLINE_BOOKINGS,
       'readonly',
-      (store) => store.index('synced').getAll(false)
+      (store) => store.index('synced').getAll(IDBKeyRange.only(false))
     );
   }
 

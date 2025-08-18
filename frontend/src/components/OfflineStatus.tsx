@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, CloudOff, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import { usePWA } from '../hooks/usePWA';
 import { backgroundSync, pwaStorage } from '../utils/pwaUtils';
+import { logger } from '../utils/logger';
 
 interface OfflineStatusProps {
   className?: string;
@@ -20,7 +21,10 @@ const OfflineStatus: React.FC<OfflineStatusProps> = ({ className = '' }) => {
         const syncQueue = await pwaStorage.getSyncQueue();
         setUnsyncedCount(unsyncedBookings.length + syncQueue.length);
       } catch (error) {
-        console.error('Error checking unsynced items:', error);
+        logger.ui.error('Error checking unsynced items', {
+          action: 'check_unsynced_items',
+          error: error as Error
+        });
       }
     };
 
@@ -42,7 +46,10 @@ const OfflineStatus: React.FC<OfflineStatusProps> = ({ className = '' }) => {
       const syncQueue = await pwaStorage.getSyncQueue();
       setUnsyncedCount(unsyncedBookings.length + syncQueue.length);
     } catch (error) {
-      console.error('Retry sync failed:', error);
+      logger.ui.error('Retry sync failed', {
+        action: 'retry_sync',
+        error: error as Error
+      });
     } finally {
       setIsRetrying(false);
     }
