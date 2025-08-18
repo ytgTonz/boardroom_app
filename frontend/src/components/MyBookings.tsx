@@ -13,17 +13,29 @@ const MyBookings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+  const [previousBookingCount, setPreviousBookingCount] = useState(0);
 
   const { user } = useAuth();
 
-  const fetchBookings = async (showRefreshIndicator = false, isFromNavigation = false) => {
+  const fetchBookings = async (showRefreshIndicator = false, isFromNavigation = false, retryCount = 0) => {
+    // Prevent concurrent fetch operations
+    if (isFetching) {
+      console.log('🚫 MyBookings: Fetch already in progress, skipping');
+      return false;
+    }
+    
+    setIsFetching(true);
     if (showRefreshIndicator) setRefreshing(true);
+    
     try {
-      // Add delay for new bookings to ensure database consistency
+      // Increased delay for better database consistency
       if (isFromNavigation) {
-        await new Promise(resolve => setTimeout(resolve, 800));
+        console.log('⏳ MyBookings: Waiting for database consistency (1500ms delay)');
+        await new Promise(resolve => setTimeout(resolve, 1500));
       }
       
+      console.log('🔄 MyBookings: Fetching bookings from API');
       const data = await bookingsAPI.getMyBookings();
       
       // Sort bookings: upcoming first (by proximity), then completed (by proximity)
@@ -47,19 +59,43 @@ const MyBookings: React.FC = () => {
       
       setBookings(sortedBookings);
       
-      // Return success for navigation state clearing
+      // Check if we have a new booking (for retry logic)
+      const hasNewBooking = isFromNavigation && data.length > previousBookingCount;
+      console.log('📊 MyBookings: Booking count comparison', { 
+        previous: previousBookingCount, 
+        current: data.length, 
+        hasNewBooking,
+        isFromNavigation,
+        retryCount 
+      });
+      
+      // Update booking count tracking
+      setPreviousBookingCount(data.length);
+      
+      // Retry logic if new booking not detected on first attempt
+      if (isFromNavigation && !hasNewBooking && retryCount === 0 && previousBookingCount > 0) {
+        console.log('🔄 MyBookings: New booking not detected, retrying in 1000ms');
+        setIsFetching(false);
+        if (showRefreshIndicator) setRefreshing(false);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return fetchBookings(showRefreshIndicator, isFromNavigation, 1);
+      }
+      
+      console.log('✅ MyBookings: Fetch completed successfully', { bookingCount: data.length });
       return true;
     } catch (error) {
-      console.error('Error fetching bookings:', error);
+      console.error('❌ MyBookings: Error fetching bookings:', error);
       return false;
     } finally {
       setLoading(false);
+      setIsFetching(false);
       if (showRefreshIndicator) setRefreshing(false);
     }
   };
 
   useEffect(() => {
     if (!user) return; // Wait for user to be loaded
+    console.log('🚀 MyBookings: Initial load for user:', user.email);
     fetchBookings();
   }, [user]);
 
@@ -71,7 +107,10 @@ const MyBookings: React.FC = () => {
       const source = searchParams.get('source');
       
       if (shouldRefresh === 'true' && user) {
-        console.log('🔄 MyBookings: URL refresh triggered', { timestamp, source });
+        console.log('🔄 MyBookings: URL refresh triggered', { timestamp, source, currentBookingCount: bookings.length });
+        
+        // Store current booking count before refresh
+        setPreviousBookingCount(bookings.length);
         
         // Fetch bookings with navigation flag
         const success = await fetchBookings(true, true);
